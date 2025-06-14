@@ -4,13 +4,41 @@ import "core:fmt"
 import "core:os"
 import "core:strings"
 
+import err "../error"
+
 import gl "vendor:OpenGL"
-import fw "vendor:glfw"
 
 // note that errors, when using includes, the line number is offset by the total line count of the included files in the order given, so just subtract the total line count of them and you can get the actual line number
-load_shader :: proc(type: u32, path: string, include: []string = nil) -> (u32, bool) {
-    src, src_succ := load_shader_src(path, include)
-    if !src_succ { fmt.eprintf("failed to load shader source! (%s)\n", path); return 0, false }
+load_program :: proc(vertex_path: string, fragment_path: string, vertex_include: []string = nil, fragment_include: []string = nil) -> u32 {
+    vsh := load_shader(gl.VERTEX_SHADER,   vertex_path,   vertex_include)
+    fsh := load_shader(gl.FRAGMENT_SHADER, fragment_path, fragment_include)
+
+    s_succ: i32
+
+    s_prog: u32
+    s_prog = gl.CreateProgram()
+
+    gl.AttachShader(s_prog, vsh)
+    gl.AttachShader(s_prog, fsh)
+    gl.LinkProgram(s_prog)
+
+    gl.DeleteShader(vsh)
+    gl.DeleteShader(fsh)
+
+    gl.GetProgramiv(s_prog, gl.LINK_STATUS, &s_succ)
+    if !bool(s_succ) { // this could be err.critical_proc_conc but its too long
+        fmt.eprintln("failed to link shader program!")
+        log: [512]u8
+        gl.GetProgramInfoLog(s_prog, 512, nil, &log[0])
+        err.critical(string(log[:]))
+    }
+
+    return s_prog
+}
+
+// note that errors, when using includes, the line number is offset by the total line count of the included files in the order given, so just subtract the total line count of them and you can get the actual line number
+load_shader :: proc(type: u32, path: string, include: []string = nil) -> u32 {
+    src := load_shader_src(path, include)
 
     shad: u32
     shad = gl.CreateShader(type)
@@ -19,23 +47,21 @@ load_shader :: proc(type: u32, path: string, include: []string = nil) -> (u32, b
 
     succ: i32
     gl.GetShaderiv(shad, gl.COMPILE_STATUS, &succ)
-    if !bool(succ) {
+    if !bool(succ) { // this could be err.critical_proc_conc but its too long
         fmt.eprintf("shader compilation failed! (%s)\n", path)
         log: [512]u8
         gl.GetShaderInfoLog(shad, 512, nil, &log[0])
-        fmt.eprintln(string(log[:]))
-        return 0, false
+        err.critical(string(log[:]))
     }
 
-    return shad, true
+    return shad
 }
 
-load_shader_src :: proc(path: string, includes: []string = nil) -> (cstring, bool) {
+load_shader_src :: proc(path: string, includes: []string = nil) -> cstring {
     data, ok := os.read_entire_file(path)
-    if !ok {
-        fmt.eprintf("failed to load shader! (%s)", path)
-        return "", false
-    } defer delete(data)
+    err.critical_conc(!ok, []string { "failed to load shader! (", path, ")" })
+
+    defer delete(data)
 
     str := string(data)
 
@@ -56,8 +82,7 @@ load_shader_src :: proc(path: string, includes: []string = nil) -> (cstring, boo
         toconc: [dynamic]string
 
         for i in 0..<len(includes) {
-            ssrc, s_succ := load_shader_src(includes[i])
-            if !s_succ { fmt.eprintf("failed to load include shader! (%s)\n", includes[i]); return "", false }
+            ssrc := load_shader_src(includes[i])
             append(&toconc, cast(string)ssrc)
         }
 
@@ -66,5 +91,5 @@ load_shader_src :: proc(path: string, includes: []string = nil) -> (cstring, boo
         str = strings.concatenate([]string {ver, toincl, ostr})
     }
 
-    return strings.clone_to_cstring(str), true
+    return strings.clone_to_cstring(str)
 }
