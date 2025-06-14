@@ -59,7 +59,7 @@ load_shader :: proc(type: u32, path: string, include: []string = nil) -> u32 {
 
 load_shader_src :: proc(path: string, includes: []string = nil) -> cstring {
     data, ok := os.read_entire_file(path)
-    err.critical_conc(!ok, []string { "failed to load shader! (", path, ")" })
+    err.critical_conc([]string { "failed to load shader! (", path, ")" }, !ok)
 
     defer delete(data)
 

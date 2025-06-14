@@ -15,10 +15,10 @@ __width:  i32
 __height: i32
 
 init :: proc(width,height: i32, title: cstring) {
-    err.critical(!bool(fw.Init()), "glfw is not being very happy >:(")
+    err.critical("glfw is not being very happy >:(", !bool(fw.Init()))
 
     __handle = fw.CreateWindow(width,height,title, nil,nil)
-    err.critical(__handle == nil, "the window is being silly, wattesigma")
+    err.critical("the window is being silly, wattesigma", __handle == nil)
 
     fw.MakeContextCurrent(__handle)
     fw.SetFramebufferSizeCallback(__handle, cb.__fbcb_size)
