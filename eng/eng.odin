@@ -5,6 +5,7 @@ import cb "callback"
 
 import gl "vendor:OpenGL"
 import fw "vendor:glfw"
+import stbi "vendor:stb/image"
 
 GL_MAJOR :: 4
 GL_MINOR :: 6
@@ -30,6 +31,8 @@ init :: proc(width,height: i32, title: cstring) {
     __width  = width
     __height = height
     gl.Viewport(0,0,__width,__height)
+
+    stbi.set_flip_vertically_on_load(1)
 }
 
 loop :: proc(update,render: proc()) {
