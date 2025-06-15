@@ -3,12 +3,17 @@ package textures
 import gl "vendor:OpenGL"
 import stbi "vendor:stb/image"
 
+__stuff_to_delete: [dynamic]^u32
+
 load_texture :: proc(path: cstring) -> u32 {
     w,h,channels: i32    
     tex_data := stbi.load(path, &w,&h,&channels, 4)
     
     tex: u32
     gl.GenTextures(1, &tex)
+
+    append(&__stuff_to_delete,&tex)
+
     gl.ActiveTexture(gl.TEXTURE0)
     gl.BindTexture(gl.TEXTURE_2D, tex)
 

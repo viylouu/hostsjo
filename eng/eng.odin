@@ -2,6 +2,8 @@ package eng // shorthand for: engine
 
 import err "error"
 import cb "callback"
+import "shaders"
+import "textures"
 
 import gl "vendor:OpenGL"
 import fw "vendor:glfw"
@@ -50,6 +52,10 @@ loop :: proc(update,render: proc()) {
 }
 
 end :: proc() {
+    for item in shaders.__stuff_to_free { free(item) }
+    for item in shaders.__stuff_to_delete { gl.DeleteProgram(item^) }
+    for item in textures.__stuff_to_delete { gl.DeleteTextures(1, transmute([^]u32)item) }
+
     fw.DestroyWindow(__handle)
     fw.Terminate()
 }
