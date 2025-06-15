@@ -19,5 +19,7 @@ load_texture :: proc(path: cstring) -> u32 {
 
     gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w,h, 0, gl.RGBA, gl.UNSIGNED_BYTE, &tex_data[0])
 
+    stbi.image_free(tex_data)
+
     return tex
 }
