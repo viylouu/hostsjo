@@ -1,9 +1,10 @@
 package eng // shorthand for: engine
 
-import err "error"
-import cb "callback"
+import "error"
+import "callback"
 import "shaders"
 import "textures"
+import "time"
 
 import gl "vendor:OpenGL"
 import fw "vendor:glfw"
@@ -18,13 +19,13 @@ __width:  i32
 __height: i32
 
 init :: proc(width,height: i32, title: cstring) {
-    err.critical("glfw is not being very happy >:(", !bool(fw.Init()))
+    error.critical("glfw is not being very happy >:(", !bool(fw.Init()))
 
     __handle = fw.CreateWindow(width,height,title, nil,nil)
-    err.critical("the window is being silly, wattesigma", __handle == nil)
+    error.critical("the window is being silly, wattesigma", __handle == nil)
 
     fw.MakeContextCurrent(__handle)
-    fw.SetFramebufferSizeCallback(__handle, cb.__fbcb_size)
+    fw.SetFramebufferSizeCallback(__handle, callback.__fbcb_size)
 
     gl.load_up_to(GL_MAJOR, GL_MINOR, proc(p: rawptr, name: cstring) {
         (^rawptr)(p)^ = fw.GetProcAddress(name)
@@ -38,11 +39,16 @@ init :: proc(width,height: i32, title: cstring) {
 }
 
 loop :: proc(update,render: proc()) {
+    lastTime: f64
     for !fw.WindowShouldClose(__handle) {
         fw.PollEvents()
 
-        __width  = cb.__width
-        __height = cb.__height
+        time.delta = fw.GetTime() - lastTime
+        time.time = time.delta + lastTime
+        lastTime = fw.GetTime()
+
+        __width  = callback.__width
+        __height = callback.__height
 
         update()
         render()
@@ -53,8 +59,6 @@ loop :: proc(update,render: proc()) {
 
 end :: proc() {
     for item in shaders.__stuff_to_free { free(item) }
-    for item in shaders.__stuff_to_delete { gl.DeleteProgram(item^) }
-    for item in textures.__stuff_to_delete { gl.DeleteTextures(1, item) }
 
     fw.DestroyWindow(__handle)
     fw.Terminate()

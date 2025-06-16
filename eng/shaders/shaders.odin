@@ -9,7 +9,6 @@ import err "../error"
 import gl "vendor:OpenGL"
 
 __stuff_to_free: [dynamic]^cstring
-__stuff_to_delete: [dynamic]^u32
 
 // note that errors, when using includes, the line number is offset by the total line count of the included files in the order given, so just subtract the total line count of them and you can get the actual line number
 load_program :: proc(vertex_path: string, fragment_path: string, vertex_include: []string = nil, fragment_include: []string = nil) -> u32 {
@@ -19,7 +18,6 @@ load_program :: proc(vertex_path: string, fragment_path: string, vertex_include:
     s_succ: i32
 
     s_prog: u32
-    append(&__stuff_to_delete, &s_prog)
     s_prog = gl.CreateProgram()
 
     gl.AttachShader(s_prog, vsh)
