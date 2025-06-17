@@ -21,6 +21,12 @@ __height: i32
 init :: proc(width,height: i32, title: cstring) {
     error.critical("glfw is not being very happy >:(", !bool(fw.Init()))
 
+    fw.WindowHint(fw.RESIZABLE, fw.TRUE)
+    fw.WindowHint(fw.OPENGL_FORWARD_COMPAT, fw.TRUE)
+    fw.WindowHint(fw.CONTEXT_VERSION_MAJOR, GL_MAJOR)
+    fw.WindowHint(fw.CONTEXT_VERSION_MINOR, GL_MINOR)
+    fw.WindowHint(fw.OPENGL_PROFILE,fw.OPENGL_CORE_PROFILE)
+
     __handle = fw.CreateWindow(width,height,title, nil,nil)
     error.critical("the window is being silly, wattesigma", __handle == nil)
 

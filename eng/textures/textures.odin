@@ -3,13 +3,13 @@ package textures
 import gl "vendor:OpenGL"
 import stbi "vendor:stb/image"
 
-load_texture :: proc(path: cstring) -> u32 {
+load_texture :: proc(path: cstring, tex_num: u32 = gl.TEXTURE0) -> u32 {
     w,h,channels: i32    
     tex_data := stbi.load(path, &w,&h,&channels, 4)
     
     tex: u32
     gl.GenTextures(1, &tex)
-    gl.ActiveTexture(gl.TEXTURE0)
+    gl.ActiveTexture(tex_num)
     gl.BindTexture(gl.TEXTURE_2D, tex)
 
     gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -23,3 +23,4 @@ load_texture :: proc(path: cstring) -> u32 {
 
     return tex
 }
+
