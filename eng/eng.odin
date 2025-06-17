@@ -66,6 +66,8 @@ loop :: proc(update,render: proc()) {
 end :: proc() {
     for item in shaders.__stuff_to_free { free(item) }
 
+    delete(shaders.__stuff_to_free)
+
     fw.DestroyWindow(__handle)
     fw.Terminate()
 }
