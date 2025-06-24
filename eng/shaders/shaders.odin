@@ -4,7 +4,7 @@ import "core:fmt"
 import "core:os"
 import "core:strings"
 
-import err "../error"
+import "../error"
 
 import gl "vendor:OpenGL"
 
@@ -32,7 +32,7 @@ load_program :: proc(vertex_path: string, fragment_path: string, vertex_include:
         fmt.eprintln("failed to link shader program!")
         log: [512]u8
         gl.GetProgramInfoLog(s_prog, 512, nil, &log[0])
-        err.critical(string(log[:]))
+        error.critical(string(log[:]))
     }
 
     return s_prog
@@ -53,7 +53,7 @@ load_shader :: proc(type: u32, path: string, include: []string = nil) -> u32 {
         fmt.eprintf("shader compilation failed! (%s)\n", path)
         log: [512]u8
         gl.GetShaderInfoLog(shad, 512, nil, &log[0])
-        err.critical(string(log[:]))
+        error.critical(string(log[:]))
     }
 
     return shad
@@ -61,7 +61,7 @@ load_shader :: proc(type: u32, path: string, include: []string = nil) -> u32 {
 
 load_shader_src :: proc(path: string, includes: []string = nil) -> cstring {
     data, ok := os.read_entire_file(path)
-    err.critical_conc([]string { "failed to load shader! (", path, ")" }, !ok)
+    error.critical_conc([]string { "failed to load shader! (", path, ")" }, !ok)
 
     defer delete(data)
 

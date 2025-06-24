@@ -1,7 +1,6 @@
 package main
 
-import "eng"
-import err "eng/error"
+import "../eng"
 
 import gl "vendor:OpenGL"
 
