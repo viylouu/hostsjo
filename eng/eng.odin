@@ -5,26 +5,26 @@ import "callback"
 import "shaders"
 import "textures"
 import "time"
+import "draw"
+import "consts"
+import "input"
 
 import gl "vendor:OpenGL"
 import fw "vendor:glfw"
 import stbi "vendor:stb/image"
-
-GL_MAJOR :: 4
-GL_MINOR :: 6
 
 __handle: fw.WindowHandle
 
 __width:  i32
 __height: i32
 
-init :: proc(width,height: i32, title: cstring) {
+init :: proc(title: cstring, width,height: i32) {
     error.critical("glfw is not being very happy >:(", !bool(fw.Init()))
 
     fw.WindowHint(fw.RESIZABLE, fw.TRUE)
     fw.WindowHint(fw.OPENGL_FORWARD_COMPAT, fw.TRUE)
-    fw.WindowHint(fw.CONTEXT_VERSION_MAJOR, GL_MAJOR)
-    fw.WindowHint(fw.CONTEXT_VERSION_MINOR, GL_MINOR)
+    fw.WindowHint(fw.CONTEXT_VERSION_MAJOR, consts.GL_MAJOR)
+    fw.WindowHint(fw.CONTEXT_VERSION_MINOR, consts.GL_MINOR)
     fw.WindowHint(fw.OPENGL_PROFILE,fw.OPENGL_CORE_PROFILE)
 
     __handle = fw.CreateWindow(width,height,title, nil,nil)
@@ -33,7 +33,7 @@ init :: proc(width,height: i32, title: cstring) {
     fw.MakeContextCurrent(__handle)
     fw.SetFramebufferSizeCallback(__handle, callback.__fbcb_size)
 
-    gl.load_up_to(GL_MAJOR, GL_MINOR, proc(p: rawptr, name: cstring) {
+    gl.load_up_to(consts.GL_MAJOR, consts.GL_MINOR, proc(p: rawptr, name: cstring) {
         (^rawptr)(p)^ = fw.GetProcAddress(name)
     })
 
@@ -42,12 +42,17 @@ init :: proc(width,height: i32, title: cstring) {
     gl.Viewport(0,0,__width,__height)
 
     stbi.set_flip_vertically_on_load(1)
+
+	if !consts.GL_ONLY {
+		draw.init(f32(width),f32(height))
+	}
 }
 
 loop :: proc(update,render: proc()) {
     lastTime: f64
     for !fw.WindowShouldClose(__handle) {
         fw.PollEvents()
+		input.poll(__handle)
 
         time.delta = fw.GetTime() - lastTime
         time.time = time.delta + lastTime
