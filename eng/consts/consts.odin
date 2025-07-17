@@ -7,3 +7,4 @@ GL_MINOR :: 3
 wflag_draw_lib:    bool
 wflag_const_scale: bool
 wflag_resizable:   bool
+wflag_imgui:       bool

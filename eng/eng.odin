@@ -9,6 +9,13 @@ import "draw"
 import "consts"
 import "input"
 
+import "core:strings"
+import "core:strconv"
+
+import im "lib/imgui"
+import imgl "lib/imgui/opengl3"
+import imfw "lib/imgui/glfw"
+
 import gl "vendor:OpenGL"
 import w "vendor:glfw"
 import img "vendor:stb/image"
@@ -28,6 +35,9 @@ WF_DEFAULT :: WF_DRAW_LIB
 WF_DRAW_LIB    :: 1 << 0    // allows you to use the eng/draw stuff instead of raw opengl
 WF_CONST_SCALE :: 1 << 1    // makes it so the draw area will not change
 WF_RESIZABLE   :: 1 << 2    // makes the window able to be resized
+WF_IMGUI       :: 1 << 3    // whether or not to initialize imgui
+
+imgui_ver_string:  string
 
 // flags can be specified using the consts in the format: WF_FLAG_NAME and bit-or-ing the flags together 
 init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
@@ -37,6 +47,7 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     consts.wflag_draw_lib    = bool(flags       & 0x1)
     consts.wflag_const_scale = bool(flags >> 1  & 0x1)
     consts.wflag_resizable   = bool(flags >> 2  & 0x1)
+    consts.wflag_imgui       = bool(flags >> 3  & 0x1)
 
     w.WindowHint(w.RESIZABLE,             i32(consts.wflag_resizable))
     w.WindowHint(w.OPENGL_FORWARD_COMPAT, w.TRUE)
@@ -54,6 +65,24 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     w.SetFramebufferSizeCallback(__handle, callback.__fbcb_size)
 
     gl.load_up_to(int(consts.GL_MAJOR),consts.GL_MINOR,w.gl_set_proc_address)
+
+    if consts.wflag_imgui {
+        im.CHECKVERSION()
+        im.CreateContext()
+
+        im.StyleColorsDark()
+
+        imfw.InitForOpenGL(__handle, true)
+        
+        buf: [2]byte
+        imgui_ver_string = strings.concatenate ([]string { 
+                "#version ", 
+                strconv.itoa(buf[:], consts.GL_MAJOR),
+                strconv.itoa(buf[:], consts.GL_MINOR*10)
+            })
+
+        imgl.Init(strings.unsafe_string_to_cstring(imgui_ver_string))
+    }
 
     __width       = width
     __height      = height
@@ -91,14 +120,34 @@ loop :: proc(update,render: proc()) {
 
         draw.update(f32(__width),f32(__height))
 
+        if consts.wflag_imgui {
+            imfw.NewFrame()
+            imgl.NewFrame()
+            im.NewFrame()
+        }
+
         update()
         render()
+
+        if consts.wflag_imgui {
+            im.Render()
+
+            imgl.RenderDrawData(im.GetDrawData())
+        }
 
         w.SwapBuffers(__handle)
     }
 }
 
 end :: proc() {
+    if consts.wflag_imgui {
+        imgl.Shutdown()
+        imfw.Shutdown()
+        im.DestroyContext()
+
+        delete(imgui_ver_string)
+    }
+
     if !consts.wflag_draw_lib {
         draw.end()
     }
