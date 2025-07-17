@@ -10,38 +10,43 @@ import "consts"
 import "input"
 
 import gl "vendor:OpenGL"
-import fw "vendor:glfw"
-import stbi "vendor:stb/image"
+import w "vendor:glfw"
+import img "vendor:stb/image"
 
-__handle: fw.WindowHandle
+__handle: w.WindowHandle
 
 __width:  i32
 __height: i32
 
+@private
+_is_running: bool
+
 init :: proc(title: cstring, width,height: i32) {
-    error.critical("glfw is not being very happy >:(", !bool(fw.Init()))
+    error.critical("glfw is not being very happy >:(", !bool(w.Init()))
 
-    fw.WindowHint(fw.RESIZABLE, fw.TRUE)
-    fw.WindowHint(fw.OPENGL_FORWARD_COMPAT, fw.TRUE)
-    fw.WindowHint(fw.CONTEXT_VERSION_MAJOR, consts.GL_MAJOR)
-    fw.WindowHint(fw.CONTEXT_VERSION_MINOR, consts.GL_MINOR)
-    fw.WindowHint(fw.OPENGL_PROFILE,fw.OPENGL_CORE_PROFILE)
+    w.WindowHint(w.RESIZABLE, w.FALSE)
+    w.WindowHint(w.OPENGL_FORWARD_COMPAT, w.TRUE)
+    w.WindowHint(w.CONTEXT_VERSION_MAJOR, consts.GL_MAJOR)
+    w.WindowHint(w.CONTEXT_VERSION_MINOR, consts.GL_MINOR)
+    w.WindowHint(w.OPENGL_PROFILE,w.OPENGL_CORE_PROFILE)
 
-    __handle = fw.CreateWindow(width,height,title, nil,nil)
+    __handle = w.CreateWindow(width,height,title, nil,nil)
     error.critical("the window is being silly, wattesigma", __handle == nil)
 
-    fw.MakeContextCurrent(__handle)
-    fw.SetFramebufferSizeCallback(__handle, callback.__fbcb_size)
+    w.MakeContextCurrent(__handle)
+    w.SwapInterval(0)
+    w.SetFramebufferSizeCallback(__handle, callback.__fbcb_size)
 
-    gl.load_up_to(consts.GL_MAJOR, consts.GL_MINOR, proc(p: rawptr, name: cstring) {
-        (^rawptr)(p)^ = fw.GetProcAddress(name)
-    })
+    //gl.load_up_to(consts.GL_MAJOR, consts.GL_MINOR, proc(p: rawptr, name: cstring) {
+    //    (^rawptr)(p)^ = w.GetProcAddress(name)
+    //})
+    gl.load_up_to(int(consts.GL_MAJOR),consts.GL_MINOR,w.gl_set_proc_address)
 
     __width  = width
     __height = height
     gl.Viewport(0,0,__width,__height)
 
-    stbi.set_flip_vertically_on_load(1)
+    img.set_flip_vertically_on_load(1)
 
 	if !consts.GL_ONLY {
 		draw.init(f32(width),f32(height))
@@ -49,14 +54,16 @@ init :: proc(title: cstring, width,height: i32) {
 }
 
 loop :: proc(update,render: proc()) {
+    _is_running = true
+
     lastTime: f64
-    for !fw.WindowShouldClose(__handle) {
-        fw.PollEvents()
+    for !w.WindowShouldClose(__handle) && _is_running {
+        w.PollEvents()
 		input.poll(__handle)
 
-        time.delta = fw.GetTime() - lastTime
+        time.delta = w.GetTime() - lastTime
         time.time = time.delta + lastTime
-        lastTime = fw.GetTime()
+        lastTime = w.GetTime()
 
         __width  = callback.__width
         __height = callback.__height
@@ -64,19 +71,29 @@ loop :: proc(update,render: proc()) {
         update()
         render()
 
-        fw.SwapBuffers(__handle)
+        w.SwapBuffers(__handle)
     }
 }
 
 end :: proc() {
-    for item in shaders.__stuff_to_free { free(item) }
+    if !consts.GL_ONLY {
+        draw.end()
+    }
 
-    delete(shaders.__stuff_to_free)
+    w.SetFramebufferSizeCallback(__handle, nil)
 
-    fw.DestroyWindow(__handle)
-    fw.Terminate()
+    w.MakeContextCurrent(nil)
+
+    w.DestroyWindow(__handle)
+    __handle = nil
+
+    w.Terminate()
 }
 
 vsync :: proc(enabled: bool) {
-    fw.SwapInterval(enabled? 1 : 0)
+    w.SwapInterval(enabled? 1 : 0)
+}
+
+stop :: proc() {
+    _is_running = false
 }

@@ -37,3 +37,17 @@ init :: proc(w,h: f32) {
 	bufs.rect.loc_proj = GetUniformLocation(bufs.rect.prog, "proj")
 }
 
+end :: proc() {
+    using OpenGL
+
+    if bufs.rect.vbo != 0 {
+        DeleteBuffers(1, &bufs.rect.vbo)
+        bufs.rect.vbo = 0
+    } if bufs.rect.vao != 0 {
+        DeleteVertexArrays(1, &bufs.rect.vao)
+        bufs.rect.vao = 0
+    } if bufs.rect.prog != 0 {
+        DeleteProgram(bufs.rect.prog)
+        bufs.rect.prog = 0
+    }
+}

@@ -1,22 +1,27 @@
 package main
 
 import "../eng"
+import "../eng/input"
+import "../eng/draw"
 
-import gl "vendor:OpenGL"
+import w "vendor:glfw"
 
 main :: proc() {
-    eng.init(800,600,"hi :)")
-    defer eng.end()
+    using eng
 
-    eng.vsync(true)
+    init("title",800,600)
+    defer end()
 
-    eng.loop(
+    vsync(true)
+
+    loop(
         proc() /* update */ {
-            
+            using input
+            if get_key(w.KEY_ESCAPE) == .press { stop() }
         },
         proc() /* render */ {
-            gl.ClearColor(1,1,1,1)
-            gl.Clear(gl.COLOR_BUFFER_BIT)
+            using draw
+            clear(0,0,0)
         }
     )
 }

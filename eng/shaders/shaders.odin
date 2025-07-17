@@ -8,8 +8,6 @@ import "../error"
 
 import gl "vendor:OpenGL"
 
-__stuff_to_free: [dynamic]^cstring
-
 // note that errors, when using includes, the line number is offset by the total line count of the included files in the order given, so just subtract the total line count of them and you can get the actual line number
 load_program :: proc(vertex_path: string, fragment_path: string, vertex_include: []string = nil, fragment_include: []string = nil) -> u32 {
     vsh := load_shader(gl.VERTEX_SHADER,   vertex_path,   vertex_include)
@@ -56,9 +54,12 @@ load_shader :: proc(type: u32, path: string, include: []string = nil) -> u32 {
         error.critical(string(log[:]))
     }
 
+    delete(src)
+
     return shad
 }
 
+// output string must be deleted at some point (using "delete(src)", not "free(&src)")
 load_shader_src :: proc(path: string, includes: []string = nil) -> cstring {
     data, ok := os.read_entire_file(path)
     error.critical_conc([]string { "failed to load shader! (", path, ")" }, !ok)
@@ -93,14 +94,13 @@ load_shader_src :: proc(path: string, includes: []string = nil) -> cstring {
 
         str = strings.concatenate([]string {ver, toincl, ostr})
 
-        free(&ostr)
-        free(&toincl)
+        delete(ostr)
+        delete(toincl)
     }
 
     res := strings.clone_to_cstring(str)
-    append(&__stuff_to_free, &res)
 
-    if includes != nil { free(&str) }
+    if includes != nil { delete(str) }
 
     return res
 }
