@@ -24,12 +24,6 @@ _is_running: bool
 init :: proc(title: cstring, width,height: i32) {
     error.critical("glfw is not being very happy >:(", !bool(w.Init()))
 
-    w.WindowHint(w.RESIZABLE, w.FALSE)
-    w.WindowHint(w.OPENGL_FORWARD_COMPAT, w.TRUE)
-    w.WindowHint(w.CONTEXT_VERSION_MAJOR, consts.GL_MAJOR)
-    w.WindowHint(w.CONTEXT_VERSION_MINOR, consts.GL_MINOR)
-    w.WindowHint(w.OPENGL_PROFILE,w.OPENGL_CORE_PROFILE)
-
     __handle = w.CreateWindow(width,height,title, nil,nil)
     error.critical("the window is being silly, wattesigma", __handle == nil)
 
@@ -41,6 +35,12 @@ init :: proc(title: cstring, width,height: i32) {
     //    (^rawptr)(p)^ = w.GetProcAddress(name)
     //})
     gl.load_up_to(int(consts.GL_MAJOR),consts.GL_MINOR,w.gl_set_proc_address)
+
+    w.WindowHint(w.RESIZABLE, w.FALSE)
+    w.WindowHint(w.OPENGL_FORWARD_COMPAT, w.TRUE)
+    w.WindowHint(w.CONTEXT_VERSION_MAJOR, consts.GL_MAJOR)
+    w.WindowHint(w.CONTEXT_VERSION_MINOR, consts.GL_MINOR)
+    w.WindowHint(w.OPENGL_PROFILE,w.OPENGL_CORE_PROFILE)
 
     __width  = width
     __height = height
