@@ -1,5 +1,7 @@
 package draw
 
+import "core:math"
+
 import gl "vendor:OpenGL"
 
 
@@ -50,3 +52,13 @@ rect_rgb_int :: proc(x,y,w,h: int, col: [3]u8) {
 }
 
 rect :: proc { rect_rgba, rect_rgba_int, rect_rgb, rect_rgb_int }
+
+rect_f32_rgba :: proc(x,y,w,h: f32, col: [4]u8) {
+    rect_rgba(i32(math.floor(x)),i32(math.floor(y)),i32(math.ceil(w)),i32(math.ceil(h)), col)
+}
+
+rect_f32_rgb :: proc(x,y,w,h: f32, col: [3]u8) {
+    rect_f32_rgba(x,y,w,h, [4]u8 { col.r,col.g,col.b, 255 })
+}
+
+frect :: proc { rect_f32_rgba, rect_f32_rgb }

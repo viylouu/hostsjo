@@ -3,4 +3,7 @@ package consts
 GL_MAJOR :: 3
 GL_MINOR :: 3
 
-GL_ONLY :: false
+// DO NOT CHANGE THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+wflag_draw_lib:    bool
+wflag_const_scale: bool
+wflag_resizable:   bool

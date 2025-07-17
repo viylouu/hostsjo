@@ -37,6 +37,10 @@ init :: proc(w,h: f32) {
 	bufs.rect.loc_proj = GetUniformLocation(bufs.rect.prog, "proj")
 }
 
+update :: proc(w,h: f32) {
+    proj = sl.mat4Ortho3d(0, w,h, 0, -1,1)
+}
+
 end :: proc() {
     using OpenGL
 

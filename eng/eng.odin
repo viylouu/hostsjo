@@ -17,14 +17,28 @@ __handle: w.WindowHandle
 
 __width:  i32
 __height: i32
+__area_width:  i32
+__area_height: i32
 
 @private
 _is_running: bool
 
-init :: proc(title: cstring, width,height: i32) {
+WF_DEFAULT :: WF_DRAW_LIB
+
+WF_DRAW_LIB    :: 1 << 0    // allows you to use the eng/draw stuff instead of raw opengl
+WF_CONST_SCALE :: 1 << 1    // makes it so the draw area will not change
+WF_RESIZABLE   :: 1 << 2    // makes the window able to be resized
+
+// flags can be specified using the consts in the format: WF_FLAG_NAME and bit-or-ing the flags together 
+init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     error.critical("glfw is not being very happy >:(", !bool(w.Init()))
 
-    w.WindowHint(w.RESIZABLE,             w.FALSE)
+    // could be better by using log2 with variables but im too lazy to do that
+    consts.wflag_draw_lib    = bool(flags       & 0x1)
+    consts.wflag_const_scale = bool(flags >> 1  & 0x1)
+    consts.wflag_resizable   = bool(flags >> 2  & 0x1)
+
+    w.WindowHint(w.RESIZABLE,             i32(consts.wflag_resizable))
     w.WindowHint(w.OPENGL_FORWARD_COMPAT, w.TRUE)
 	w.WindowHint(w.OPENGL_PROFILE,        w.OPENGL_CORE_PROFILE)
     w.WindowHint(w.OPENGL_FORWARD_COMPAT, w.TRUE)
@@ -39,19 +53,19 @@ init :: proc(title: cstring, width,height: i32) {
     w.SwapInterval(0)
     w.SetFramebufferSizeCallback(__handle, callback.__fbcb_size)
 
-    //gl.load_up_to(consts.GL_MAJOR, consts.GL_MINOR, proc(p: rawptr, name: cstring) {
-    //    (^rawptr)(p)^ = w.GetProcAddress(name)
-    //})
     gl.load_up_to(int(consts.GL_MAJOR),consts.GL_MINOR,w.gl_set_proc_address)
 
-    __width  = width
-    __height = height
-    gl.Viewport(0,0,__width,__height)
+    __width       = width
+    __height      = height
+    __area_width  = width
+    __area_height = height
+
+    gl.Viewport(0,0,__area_width,__area_height)
 
     img.set_flip_vertically_on_load(1)
 
-	if !consts.GL_ONLY {
-		draw.init(f32(width),f32(height))
+	if consts.wflag_draw_lib {
+		draw.init(f32(__area_width),f32(__area_height))
 	}
 }
 
@@ -70,6 +84,13 @@ loop :: proc(update,render: proc()) {
         __width  = callback.__width
         __height = callback.__height
 
+        if consts.wflag_const_scale {
+            __area_width  = __width
+            __area_height = __height
+        } 
+
+        draw.update(f32(__width),f32(__height))
+
         update()
         render()
 
@@ -78,7 +99,7 @@ loop :: proc(update,render: proc()) {
 }
 
 end :: proc() {
-    if !consts.GL_ONLY {
+    if !consts.wflag_draw_lib {
         draw.end()
     }
 
