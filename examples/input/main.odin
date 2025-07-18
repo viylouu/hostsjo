@@ -20,14 +20,14 @@ main :: proc() {
     loop(
         proc() /* update */ {
             using input
-            if get_key(w.KEY_ESCAPE) == .press { stop() }
+            if is_key_press(w.KEY_ESCAPE) { stop() }
 
             SPEED :f32: 256
 
-            if get_key(w.KEY_W) == .hold { pos_y -= SPEED * time.delta32 }
-            if get_key(w.KEY_A) == .hold { pos_x -= SPEED * time.delta32 }
-            if get_key(w.KEY_S) == .hold { pos_y += SPEED * time.delta32 }
-            if get_key(w.KEY_D) == .hold { pos_x += SPEED * time.delta32 }
+            if is_key_hold(w.KEY_W) { pos_y -= SPEED * time.delta32 }
+            if is_key_hold(w.KEY_A) { pos_x -= SPEED * time.delta32 }
+            if is_key_hold(w.KEY_S) { pos_y += SPEED * time.delta32 }
+            if is_key_hold(w.KEY_D) { pos_x += SPEED * time.delta32 }
         },
         proc() /* render */ {
             using draw

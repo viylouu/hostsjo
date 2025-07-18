@@ -25,7 +25,7 @@ main :: proc() {
     loop(
         proc() /* update */ {
             using input
-            if get_key(w.KEY_ESCAPE) == .press { stop() }
+            if is_key_press(w.KEY_ESCAPE) { stop() }
         },
         proc() /* render */ {
             using draw
