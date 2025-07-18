@@ -42,6 +42,10 @@ main :: proc() {
 
                 smooth_setty_step :f32= 0.1
                 im.InputFloat("smooth setty", &val_float, smooth_setty_step)
+
+                if im.Button("print hi to the console") {
+                    fmt.println("hi :)")
+                }
                 
                 if im.TreeNode("dropdown") {
                     im.ColorPicker3("rainbow", &val_col)

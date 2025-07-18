@@ -110,6 +110,9 @@ loop :: proc(update,render: proc()) {
         time.time = time.delta + lastTime
         lastTime = w.GetTime()
 
+        time.delta32 = f32(time.delta)
+        time.time32 = f32(time.time)
+
         __width  = callback.__width
         __height = callback.__height
 

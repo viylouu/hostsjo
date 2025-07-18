@@ -2,17 +2,12 @@ package input
 
 import fw "vendor:glfw"
 
-keys: [349]kstate
-mouse:  [8]mstate
+keys: [349]state
+mouse:  [8]state
 
-kstate :: enum {
+state :: enum {
 	nhold,
 	press,
-	hold
-}
-
-mstate :: enum {
-	nhold,
 	hold
 }
 
@@ -21,11 +16,15 @@ lmouse_x, lmouse_y: f32
 
 poll :: proc(handle: fw.WindowHandle) {
 	for i in 0..<349 {
-		keys[i] = cast(kstate)fw.GetKey(handle, i32(i))
+        was_press := keys[i] == .press
+		keys[i] = cast(state)fw.GetKey(handle, i32(i))
+        if keys[i] == .press && was_press { keys[i] = .hold }
 	}
 
 	for i in 0..<8 {
-		mouse[i] = cast(mstate)fw.GetMouseButton(handle, i32(i))
+        was_press := mouse[i] == .press
+		mouse[i] = cast(state)fw.GetMouseButton(handle, i32(i))
+        if mouse[i] == .press && was_press { mouse[i] = .hold }
 	}
 
 	mouse_x64, mouse_y64 := fw.GetCursorPos(handle)
@@ -37,10 +36,10 @@ poll :: proc(handle: fw.WindowHandle) {
 	mouse_y = f32(mouse_y64)
 }
 
-get_key :: proc(key: int) -> kstate {
+get_key :: proc(key: int) -> state {
 	return keys[key]
 }
 
-get_mouse :: proc(but: int) -> mstate {
+get_mouse :: proc(but: int) -> state {
 	return mouse[but]
 }
