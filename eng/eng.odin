@@ -2,11 +2,11 @@ package eng // shorthand for: engine
 
 import "error"
 import "callback"
-import "shaders"
-import "textures"
+import "shader"
+import "texture"
 import "time"
 import "draw"
-import "consts"
+import "const"
 import "input"
 
 import "core:strings"
@@ -17,10 +17,10 @@ import imgl "lib/imgui/opengl3"
 import imfw "lib/imgui/glfw"
 
 import gl "vendor:OpenGL"
-import w "vendor:glfw"
-import img "vendor:stb/image"
+import "vendor:glfw"
+import "vendor:stb/image"
 
-__handle: w.WindowHandle
+__handle: glfw.WindowHandle
 
 __width:  i32
 __height: i32
@@ -41,32 +41,34 @@ imgui_ver_string:  string
 
 // flags can be specified using the consts in the format: WF_FLAG_NAME and bit-or-ing the flags together 
 init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
-    error.critical("glfw is not being very happy >:(", !bool(w.Init()))
+    using glfw
+
+    error.critical("glfw is not being very happy >:(", !bool(Init()))
 
     // could be better by using log2 with variables but im too lazy to do that
-    consts.wflag_draw_lib    = bool(flags       & 0x1)
-    consts.wflag_const_scale = bool(flags >> 1  & 0x1)
-    consts.wflag_resizable   = bool(flags >> 2  & 0x1)
-    consts.wflag_imgui       = bool(flags >> 3  & 0x1)
+    const.wflag_draw_lib    = bool(flags       & 0x1)
+    const.wflag_const_scale = bool(flags >> 1  & 0x1)
+    const.wflag_resizable   = bool(flags >> 2  & 0x1)
+    const.wflag_imgui       = bool(flags >> 3  & 0x1)
 
-    w.WindowHint(w.RESIZABLE,             i32(consts.wflag_resizable))
-    w.WindowHint(w.OPENGL_FORWARD_COMPAT, w.TRUE)
-	w.WindowHint(w.OPENGL_PROFILE,        w.OPENGL_CORE_PROFILE)
-    w.WindowHint(w.OPENGL_FORWARD_COMPAT, w.TRUE)
-    w.WindowHint(w.CONTEXT_VERSION_MAJOR, consts.GL_MAJOR)
-    w.WindowHint(w.CONTEXT_VERSION_MINOR, consts.GL_MINOR)
-    w.WindowHint(w.FLOATING,              w.TRUE)
+    WindowHint(RESIZABLE,             i32(const.wflag_resizable))
+    WindowHint(OPENGL_FORWARD_COMPAT, TRUE)
+	WindowHint(OPENGL_PROFILE,        OPENGL_CORE_PROFILE)
+    WindowHint(OPENGL_FORWARD_COMPAT, TRUE)
+    WindowHint(CONTEXT_VERSION_MAJOR, const.GL_MAJOR)
+    WindowHint(CONTEXT_VERSION_MINOR, const.GL_MINOR)
+    WindowHint(FLOATING,              TRUE)
 
-    __handle = w.CreateWindow(width,height,title, nil,nil)
+    __handle = CreateWindow(width,height,title, nil,nil)
     error.critical("the window is being silly, wattesigma", __handle == nil)
 
-    w.MakeContextCurrent(__handle)
-    w.SwapInterval(0)
-    w.SetFramebufferSizeCallback(__handle, callback.__fbcb_size)
+    MakeContextCurrent(__handle)
+    SwapInterval(0)
+    SetFramebufferSizeCallback(__handle, callback.__fbcb_size)
 
-    gl.load_up_to(int(consts.GL_MAJOR),consts.GL_MINOR,w.gl_set_proc_address)
+    gl.load_up_to(int(const.GL_MAJOR), const.GL_MINOR, gl_set_proc_address)
 
-    if consts.wflag_imgui {
+    if const.wflag_imgui {
         im.CHECKVERSION()
         im.CreateContext()
 
@@ -77,8 +79,8 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
         buf: [2]byte
         imgui_ver_string = strings.concatenate ([]string { 
                 "#version ", 
-                strconv.itoa(buf[:], consts.GL_MAJOR),
-                strconv.itoa(buf[:], consts.GL_MINOR*10)
+                strconv.itoa(buf[:], const.GL_MAJOR),
+                strconv.itoa(buf[:], const.GL_MINOR*10)
             })
 
         imgl.Init(strings.unsafe_string_to_cstring(imgui_ver_string))
@@ -91,9 +93,7 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
 
     gl.Viewport(0,0,__area_width,__area_height)
 
-    img.set_flip_vertically_on_load(1)
-
-	if consts.wflag_draw_lib {
+	if const.wflag_draw_lib {
 		draw.init(f32(__area_width),f32(__area_height))
 	}
 }
@@ -101,14 +101,16 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
 loop :: proc(update,render: proc()) {
     _is_running = true
 
+    using glfw
+
     lastTime: f64
-    for !w.WindowShouldClose(__handle) && _is_running {
-        w.PollEvents()
+    for !WindowShouldClose(__handle) && _is_running {
+        PollEvents()
 		input.poll(__handle)
 
-        time.delta = w.GetTime() - lastTime
+        time.delta = GetTime() - lastTime
         time.time = time.delta + lastTime
-        lastTime = w.GetTime()
+        lastTime = GetTime()
 
         time.delta32 = f32(time.delta)
         time.time32 = f32(time.time)
@@ -116,14 +118,14 @@ loop :: proc(update,render: proc()) {
         __width  = callback.__width
         __height = callback.__height
 
-        if consts.wflag_const_scale {
+        if const.wflag_const_scale {
             __area_width  = __width
             __area_height = __height
         } 
 
         draw.update(f32(__width),f32(__height))
 
-        if consts.wflag_imgui {
+        if const.wflag_imgui {
             imfw.NewFrame()
             imgl.NewFrame()
             im.NewFrame()
@@ -132,18 +134,20 @@ loop :: proc(update,render: proc()) {
         update()
         render()
 
-        if consts.wflag_imgui {
+        if const.wflag_imgui {
             im.Render()
 
             imgl.RenderDrawData(im.GetDrawData())
         }
 
-        w.SwapBuffers(__handle)
+        SwapBuffers(__handle)
     }
 }
 
 end :: proc() {
-    if consts.wflag_imgui {
+    using glfw
+
+    if const.wflag_imgui {
         imgl.Shutdown()
         imfw.Shutdown()
         im.DestroyContext()
@@ -151,22 +155,23 @@ end :: proc() {
         delete(imgui_ver_string)
     }
 
-    if !consts.wflag_draw_lib {
+    if !const.wflag_draw_lib {
         draw.end()
     }
 
-    w.SetFramebufferSizeCallback(__handle, nil)
+    SetFramebufferSizeCallback(__handle, nil)
 
-    w.MakeContextCurrent(nil)
+    MakeContextCurrent(nil)
 
-    w.DestroyWindow(__handle)
+    DestroyWindow(__handle)
     __handle = nil
 
-    w.Terminate()
+    Terminate()
 }
 
 vsync :: proc(enabled: bool) {
-    w.SwapInterval(enabled? 1 : 0)
+    using glfw
+    SwapInterval(enabled? 1 : 0)
 }
 
 stop :: proc() {
