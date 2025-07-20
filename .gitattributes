@@ -1,1 +1,4 @@
-/eng/lib/* linguist-detectable=false
+/eng/lib/fastnoiselite/* linguist-detectable=false
+/eng/lib/imgui/* linguist-detectable=false
+/eng/lib/imgui/glfw/* linguist-detectable=false
+/etc/lib/imgui/opengl3/* linguist-detectable=false
