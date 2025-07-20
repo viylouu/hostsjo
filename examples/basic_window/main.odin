@@ -4,7 +4,7 @@ import "../../eng"
 import "../../eng/input"
 import "../../eng/draw"
 
-import w "vendor:glfw"
+import "vendor:glfw"
 
 main :: proc() {
     using eng
@@ -17,7 +17,9 @@ main :: proc() {
     loop(
         proc() /* update */ {
             using input
-            if is_key_press(w.KEY_ESCAPE) { stop() }
+            using glfw
+
+            if is_key_press(KEY_ESCAPE) { stop() }
         },
         proc() /* render */ {
             using draw

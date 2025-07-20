@@ -18,12 +18,11 @@ texture :: struct {
 // all textures must be freed using texture.free(tex)
 load :: proc(path: string) -> texture {
     w,h,channels: i32
-    cpath := strings.clone_to_cstring(path)
+    cpath := strings.unsafe_string_to_cstring(path)
     data := image.load(cpath, &w,&h,&channels, 4)
     error.critical_conc([]string{ "failed to load texture! '", path, "'" }, data == nil)
     error.critical_conc([]string{ "texture does not have 4 channels! '", path, "'" }, channels != 4)
 
-    defer delete(cpath)
     defer image.image_free(data)
 
     using OpenGL

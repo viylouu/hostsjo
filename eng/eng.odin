@@ -2,8 +2,6 @@ package eng // shorthand for: engine
 
 import "error"
 import "callback"
-import "shader"
-import "texture"
 import "time"
 import "draw"
 import "const"
@@ -16,7 +14,7 @@ import im "lib/imgui"
 import imgl "lib/imgui/opengl3"
 import imfw "lib/imgui/glfw"
 
-import gl "vendor:OpenGL"
+import "vendor:OpenGL"
 import "vendor:glfw"
 import "vendor:stb/image"
 
@@ -66,7 +64,7 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     SwapInterval(0)
     SetFramebufferSizeCallback(__handle, callback.__fbcb_size)
 
-    gl.load_up_to(int(const.GL_MAJOR), const.GL_MINOR, gl_set_proc_address)
+    OpenGL.load_up_to(int(const.GL_MAJOR), const.GL_MINOR, gl_set_proc_address)
 
     if const.wflag_imgui {
         im.CHECKVERSION()
@@ -91,7 +89,7 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     __area_width  = width
     __area_height = height
 
-    gl.Viewport(0,0,__area_width,__area_height)
+    OpenGL.Viewport(0,0,__area_width,__area_height)
 
 	if const.wflag_draw_lib {
 		draw.init(f32(__area_width),f32(__area_height))
@@ -102,18 +100,19 @@ loop :: proc(update,render: proc()) {
     _is_running = true
 
     using glfw
+    using time
 
     lastTime: f64
     for !WindowShouldClose(__handle) && _is_running {
         PollEvents()
 		input.poll(__handle)
 
-        time.delta = GetTime() - lastTime
-        time.time = time.delta + lastTime
+        delta = GetTime() - lastTime
+        time = delta + lastTime
         lastTime = GetTime()
 
-        time.delta32 = f32(time.delta)
-        time.time32 = f32(time.time)
+        delta32 = f32(delta)
+        time32 = f32(time)
 
         __width  = callback.__width
         __height = callback.__height
@@ -136,7 +135,6 @@ loop :: proc(update,render: proc()) {
 
         if const.wflag_imgui {
             im.Render()
-
             imgl.RenderDrawData(im.GetDrawData())
         }
 

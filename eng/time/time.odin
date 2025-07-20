@@ -1,4 +1,4 @@
-package teime
+package ihavenoideawhatconflictswiththepackagenametimesoiamjustgoingtousethislongassname
 
 delta: f64
 time: f64

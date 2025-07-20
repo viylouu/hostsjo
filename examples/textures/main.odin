@@ -3,14 +3,9 @@ package main
 import "../../eng"
 import "../../eng/input"
 import "../../eng/draw"
-import "../../eng/error"
 import "../../eng/texture"
 
-import "core:strings"
-
-import "vendor:OpenGL"
-import w "vendor:glfw"
-import stbi "vendor:stb/image"
+import "vendor:glfw"
 
 tex: texture.texture
 
@@ -27,7 +22,9 @@ main :: proc() {
     loop(
         proc() /* update */ {
             using input
-            if is_key_press(w.KEY_ESCAPE) { stop() }
+            using glfw
+
+            if is_key_press(KEY_ESCAPE) { stop() }
         },
         proc() /* render */ {
             using draw
