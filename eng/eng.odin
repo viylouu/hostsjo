@@ -141,7 +141,7 @@ loop :: proc(update,render: proc()) {
         render()
 
         if const.wflag_sound_lib {
-            sound.stfu_all_who_need_be_stfud()
+            sound.update()
         }
 
         if const.wflag_imgui {
@@ -165,7 +165,8 @@ end :: proc() {
     }
 
     if const.wflag_sound_lib {
-        sound.stfu_all_who_need_be_stfud_and_all_who_needent_be_stfud()
+        sound.stfu()
+        sound.end()
     }
 
     if const.wflag_draw_lib {

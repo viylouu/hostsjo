@@ -17,28 +17,34 @@ sound :: struct {
     data: []i16,
     is_stereo: bool,
     al_buf: u32,
+    pitch: f32,
+    volume: f32,
     sample_rate: u32
 }
 
 soundInst :: struct {
     al_src: u32,
     looping: bool,
-    volume: f32,
-    pitch: f32,
     sound: ^sound
 }
 
+device: alc.Device
+ctx:    alc.Context
+
 init :: proc() {
-    device := alc.open_device(nil)
+    device = alc.open_device(nil)
     error.critical("failed to open OpenAL device!", device == nil)
-    defer alc.close_device(device)
     
-    ctx := alc.create_context(device, nil)
+    ctx = alc.create_context(device, nil)
     error.critical("failed to create OpenAL context!", ctx == nil)
-    defer alc.destroy_context(ctx)
 
     alc.make_context_current(ctx)
-    defer alc.make_context_current(nil)
+}
+
+end :: proc() {
+    alc.make_context_current(nil)
+    alc.destroy_context(ctx)
+    alc.close_device(device)
 }
 
 load :: proc(path: string) -> sound {
@@ -113,25 +119,30 @@ load :: proc(path: string) -> sound {
         data = data,
         is_stereo = is_stereo,
         al_buf = buf,
+        volume = 1,
+        pitch = 1,
         sample_rate = sample_rate
     }
 
-    //delete(data)
+    delete(data)
 
     return output
 }
 
-remove :: proc(sound: ^sound) {
+unload :: proc(sound: ^sound) {
     al.delete_buffers(1, &sound^.al_buf)
     delete(sound^.data)
 }
 
-stfu_all_who_need_be_stfud :: proc() {
+update :: proc() {
     for i := 0; i < len(sounds); i += 1 {
         this := sounds[i]
 
         state: i32
         al.get_sourcei(this^.al_src, al.SOURCE_STATE, &state)
+
+        al.sourcef(this^.al_src, al.GAIN, this^.sound^.volume)
+        al.sourcef(this^.al_src, al.PITCH, this^.sound^.pitch)
 
         if state != al.PLAYING {
             // shut the fuck up
@@ -147,7 +158,7 @@ stfu_all_who_need_be_stfud :: proc() {
     }
 }
 
-stfu_all_who_need_be_stfud_and_all_who_needent_be_stfud :: proc() {
+stfu :: proc() {
     for i in 0..<len(sounds) {
         al.source_stop(sounds[i]^.al_src)
 
@@ -159,13 +170,14 @@ stfu_all_who_need_be_stfud_and_all_who_needent_be_stfud :: proc() {
 
 play :: proc(sound: ^sound) {
     src: u32
+    al.gen_sources(1, &src)
     al.sourcei(src, al.BUFFER, i32(sound^.al_buf))
     al.source_play(src)
 
-    inst: soundInst
-    inst.al_src = src
-    inst.looping = false
-    inst.volume = 1
-    inst.pitch = 0
-    inst.sound = sound
+    inst := new(soundInst)
+    inst^.al_src = src
+    inst^.looping = false
+    inst^.sound = sound
+
+    append(&sounds, inst)
 }

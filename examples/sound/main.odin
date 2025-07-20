@@ -3,7 +3,10 @@ package main
 import "../../eng"
 import "../../eng/input"
 import "../../eng/draw"
+import "../../eng/time"
 import "../../eng/sound"
+
+import "core:math"
 
 import "vendor:glfw"
 
@@ -19,10 +22,10 @@ main :: proc() {
     vsync(true)
 
     music = sound.load("examples/sound/sound.wav")
-    defer sound.remove(&music)
+    defer sound.unload(&music)
 
     introfade = sound.load("examples/sound/introfade.wav")
-    defer sound.remove(&introfade)
+    defer sound.unload(&introfade)
 
     sound.play(&music)
 
@@ -30,10 +33,13 @@ main :: proc() {
         proc() /* update */ {
             using input
             using glfw
+            using time
 
             if is_key_press(KEY_ESCAPE) { stop() }
 
             if is_mouse_press(MOUSE_BUTTON_LEFT) { sound.play(&introfade) }
+
+            music.pitch = math.sin(time32*32) + 1
         },
         proc() /* render */ {
             using draw
