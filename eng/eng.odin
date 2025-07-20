@@ -55,7 +55,6 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     WindowHint(RESIZABLE,             i32(const.wflag_resizable))
     WindowHint(OPENGL_FORWARD_COMPAT, TRUE)
 	WindowHint(OPENGL_PROFILE,        OPENGL_CORE_PROFILE)
-    WindowHint(OPENGL_FORWARD_COMPAT, TRUE)
     WindowHint(CONTEXT_VERSION_MAJOR, const.GL_MAJOR)
     WindowHint(CONTEXT_VERSION_MINOR, const.GL_MINOR)
     WindowHint(FLOATING,              TRUE)
@@ -81,7 +80,8 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
         imgui_ver_string = strings.concatenate ([]string { 
                 "#version ", 
                 strconv.itoa(buf[:], const.GL_MAJOR),
-                strconv.itoa(buf[:], const.GL_MINOR*10)
+                strconv.itoa(buf[:], const.GL_MINOR),
+                "0 core"
             })
 
         imgl.Init(strings.unsafe_string_to_cstring(imgui_ver_string))
@@ -114,9 +114,10 @@ loop :: proc(update,render: proc()) {
         PollEvents()
 		input.poll(__handle)
 
-        delta = GetTime() - lastTime
-        time = delta + lastTime
-        lastTime = GetTime()
+        now := GetTime()
+        delta = now - lastTime
+        time = now
+        lastTime = now
 
         delta32 = f32(delta)
         time32 = f32(time)
@@ -129,7 +130,9 @@ loop :: proc(update,render: proc()) {
             __area_height = __height
         } 
 
-        draw.update(f32(__width),f32(__height))
+        if const.wflag_draw_lib {
+            draw.update(f32(__width),f32(__height))
+        }
 
         if const.wflag_imgui {
             imfw.NewFrame()
