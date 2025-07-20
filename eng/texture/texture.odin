@@ -43,7 +43,7 @@ load :: proc(path: string) -> texture {
     return texture{ glid = glid, width = w, height = h }
 }
 
-free :: proc(tex: ^texture) {
+remove :: proc(tex: ^texture) {
     using OpenGL
     DeleteTextures(1, &tex^.glid)
     tex^.glid   = 0

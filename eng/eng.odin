@@ -6,6 +6,7 @@ import "time"
 import "draw"
 import "const"
 import "input"
+import "sound"
 
 import "core:strings"
 import "core:strconv"
@@ -28,12 +29,13 @@ __area_height: i32
 @private
 _is_running: bool
 
-WF_DEFAULT :: WF_DRAW_LIB
+WF_DEFAULT :: WF_DRAW_LIB | WF_SOUND_LIB
 
-WF_DRAW_LIB    :: 1 << 0    // allows you to use the eng/draw stuff instead of raw opengl
+WF_DRAW_LIB    :: 1 << 0    // allows you to use the eng/draw stuff instead of raw opengl or whatever
 WF_CONST_SCALE :: 1 << 1    // makes it so the draw area will not change
 WF_RESIZABLE   :: 1 << 2    // makes the window able to be resized
 WF_IMGUI       :: 1 << 3    // whether or not to initialize imgui
+WF_SOUND_LIB   :: 1 << 4    // allows you to use the eng/sound stuff instead of raw openal or whatever
 
 imgui_ver_string:  string
 
@@ -48,6 +50,7 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     const.wflag_const_scale = bool(flags >> 1  & 0x1)
     const.wflag_resizable   = bool(flags >> 2  & 0x1)
     const.wflag_imgui       = bool(flags >> 3  & 0x1)
+    const.wflag_sound_lib   = bool(flags >> 4  & 0x1)
 
     WindowHint(RESIZABLE,             i32(const.wflag_resizable))
     WindowHint(OPENGL_FORWARD_COMPAT, TRUE)
@@ -94,6 +97,10 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
 	if const.wflag_draw_lib {
 		draw.init(f32(__area_width),f32(__area_height))
 	}
+
+    if const.wflag_sound_lib {
+        sound.init()
+    }
 }
 
 loop :: proc(update,render: proc()) {
@@ -133,6 +140,10 @@ loop :: proc(update,render: proc()) {
         update()
         render()
 
+        if const.wflag_sound_lib {
+            sound.stfu_all_who_need_be_stfud()
+        }
+
         if const.wflag_imgui {
             im.Render()
             imgl.RenderDrawData(im.GetDrawData())
@@ -153,7 +164,11 @@ end :: proc() {
         delete(imgui_ver_string)
     }
 
-    if !const.wflag_draw_lib {
+    if const.wflag_sound_lib {
+        sound.stfu_all_who_need_be_stfud_and_all_who_needent_be_stfud()
+    }
+
+    if const.wflag_draw_lib {
         draw.end()
     }
 

@@ -1,0 +1,171 @@
+package sound
+
+import "core:fmt"
+import "core:math"
+import "core:strings"
+
+import "../error"
+import "../lib/OpenAL/alc"
+import "../lib/OpenAL/al"
+import "../lib/dr_libs/dr_wav"
+import "../lib/dr_libs/dr_flac"
+import "../lib/dr_libs/dr_mp3"
+
+sounds: [dynamic]^soundInst
+
+sound :: struct {
+    data: []i16,
+    is_stereo: bool,
+    al_buf: u32,
+    sample_rate: u32
+}
+
+soundInst :: struct {
+    al_src: u32,
+    looping: bool,
+    volume: f32,
+    pitch: f32,
+    sound: ^sound
+}
+
+init :: proc() {
+    device := alc.open_device(nil)
+    error.critical("failed to open OpenAL device!", device == nil)
+    defer alc.close_device(device)
+    
+    ctx := alc.create_context(device, nil)
+    error.critical("failed to create OpenAL context!", ctx == nil)
+    defer alc.destroy_context(ctx)
+
+    alc.make_context_current(ctx)
+    defer alc.make_context_current(nil)
+}
+
+load :: proc(path: string) -> sound {
+    using dr_wav
+    using dr_mp3
+    using dr_flac
+
+    samples: [^]f32
+    total_samples: u64
+    is_stereo: bool
+    sample_rate: u32
+
+    if strings.has_suffix(path, ".wav") {
+        wav: drwav
+        error.critical("failed to open file!", drwav_init_file(&wav, strings.unsafe_string_to_cstring(path), nil) == 0)
+
+        total_samples = wav.totalPCMFrameCount * u64(wav.channels)
+        samples = make([^]f32, total_samples)
+        sample_rate = wav.sampleRate
+
+        drwav_read_pcm_frames_f32(&wav, wav.totalPCMFrameCount, samples)
+
+        is_stereo = wav.channels == 2
+
+        drwav_uninit(&wav)
+    } else if strings.has_suffix(path, ".flac") {
+        // why is this one different ????
+        flac := drflac_open_file(strings.unsafe_string_to_cstring(path), nil)
+        error.critical("failed to open file!", flac == nil)
+
+        total_samples = flac^.totalPCMFrameCount * u64(flac^.channels)
+        samples = make([^]f32, total_samples)
+        sample_rate = flac^.sampleRate
+
+        drflac_read_pcm_frames_f32(flac, flac^.totalPCMFrameCount, samples)
+
+        is_stereo = flac^.channels == 2
+
+        drflac_close(flac)
+    } else if strings.has_suffix(path, ".mp3") {
+        mp3: drmp3
+        error.critical("failed to open file!", drmp3_init_file(&mp3, strings.unsafe_string_to_cstring(path), nil) == 0)
+
+        total_samples = mp3.totalPCMFrameCount * u64(mp3.channels)
+        samples = make([^]f32, total_samples)
+        sample_rate = mp3.sampleRate
+
+        drmp3_read_pcm_frames_f32(&mp3, mp3.totalPCMFrameCount, samples)
+
+        is_stereo = mp3.channels == 2
+
+        drmp3_uninit(&mp3)
+    } else { error.critical_conc([]string { "unsupported audio file format! '", path, "'" }) }
+
+    data := make([]i16, total_samples)
+
+    for i in 0..<len(data) {
+        raw_float := samples[i]
+        conv_float := raw_float * 32767
+        data[i] = i16(conv_float)
+    }
+
+    free(samples)
+
+    buf: u32
+    al.gen_buffers(1, &buf)
+
+    format := is_stereo? al.FORMAT_STEREO16 : al.FORMAT_MONO16
+    al.buffer_data(buf, format, &data[0], i32(len(data) * size_of(i16)), i32(sample_rate))
+
+    output := sound {
+        data = data,
+        is_stereo = is_stereo,
+        al_buf = buf,
+        sample_rate = sample_rate
+    }
+
+    //delete(data)
+
+    return output
+}
+
+remove :: proc(sound: ^sound) {
+    al.delete_buffers(1, &sound^.al_buf)
+    delete(sound^.data)
+}
+
+stfu_all_who_need_be_stfud :: proc() {
+    for i := 0; i < len(sounds); i += 1 {
+        this := sounds[i]
+
+        state: i32
+        al.get_sourcei(this^.al_src, al.SOURCE_STATE, &state)
+
+        if state != al.PLAYING {
+            // shut the fuck up
+            al.source_stop(this^.al_src)
+
+            if !this^.looping {
+                unordered_remove(&sounds, i)
+                i -= 1
+            } else {
+                al.source_play(this^.al_src)
+            }
+        }
+    }
+}
+
+stfu_all_who_need_be_stfud_and_all_who_needent_be_stfud :: proc() {
+    for i in 0..<len(sounds) {
+        al.source_stop(sounds[i]^.al_src)
+
+        al.delete_sources(1, &sounds[i]^.al_src)
+    }
+
+    delete(sounds)
+}
+
+play :: proc(sound: ^sound) {
+    src: u32
+    al.sourcei(src, al.BUFFER, i32(sound^.al_buf))
+    al.source_play(src)
+
+    inst: soundInst
+    inst.al_src = src
+    inst.looping = false
+    inst.volume = 1
+    inst.pitch = 0
+    inst.sound = sound
+}

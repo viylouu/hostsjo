@@ -18,6 +18,7 @@ main :: proc() {
     vsync(true)
 
     tex = texture.load("examples/textures/tex.png")
+    defer texture.remove(&tex)
 
     loop(
         proc() /* update */ {
