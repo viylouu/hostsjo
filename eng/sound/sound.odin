@@ -107,8 +107,6 @@ load :: proc(path: string) -> sound {
         data[i] = i16(conv_float)
     }
 
-    free(samples)
-
     buf: u32
     al.gen_buffers(1, &buf)
 
@@ -123,8 +121,6 @@ load :: proc(path: string) -> sound {
         pitch = 1,
         sample_rate = sample_rate
     }
-
-    delete(data)
 
     return output
 }
