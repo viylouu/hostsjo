@@ -9,9 +9,20 @@ import "../error"
 import gl "vendor:OpenGL"
 
 // note that errors, when using includes, the line number is offset by the total line count of the included files in the order given, so just subtract the total line count of them and you can get the actual line number
-load_program :: proc(vertex_path: string, fragment_path: string, vertex_include: []string = nil, fragment_include: []string = nil) -> u32 {
-    vsh := load_shader(gl.VERTEX_SHADER,   vertex_path,   vertex_include)
-    fsh := load_shader(gl.FRAGMENT_SHADER, fragment_path, fragment_include)
+load_program :: proc(vertex_path, fragment_path: string, vertex_include: []string = nil, fragment_include: []string = nil) -> u32 {
+    vsrc := load_shader_src(vertex_path, vertex_include)
+    fsrc := load_shader_src(fragment_path, fragment_include)
+    
+    defer delete(vsrc)
+    defer delete(fsrc)
+
+    return load_program_from_src(&vsrc, &fsrc)
+}
+
+// this will not delete your source code, so you have to do that yourself bozo, also haha cstring
+load_program_from_src :: proc(vertex_source, fragment_source: ^cstring) -> u32 {
+    vsh := load_shader_from_src(gl.VERTEX_SHADER,   vertex_source)
+    fsh := load_shader_from_src(gl.FRAGMENT_SHADER, fragment_source)
 
     s_succ: i32
 
@@ -26,7 +37,7 @@ load_program :: proc(vertex_path: string, fragment_path: string, vertex_include:
     gl.DeleteShader(fsh)
 
     gl.GetProgramiv(s_prog, gl.LINK_STATUS, &s_succ)
-    if !bool(s_succ) { // this could be err.critical_proc_conc but its too long
+    if !bool(s_succ) {
         fmt.eprintln("failed to link shader program!")
         log: [512]u8
         gl.GetProgramInfoLog(s_prog, 512, nil, &log[0])
@@ -39,27 +50,30 @@ load_program :: proc(vertex_path: string, fragment_path: string, vertex_include:
 // note that errors, when using includes, the line number is offset by the total line count of the included files in the order given, so just subtract the total line count of them and you can get the actual line number
 load_shader :: proc(type: u32, path: string, include: []string = nil) -> u32 {
     src := load_shader_src(path, include)
+    defer delete(src)
+    return load_shader_from_src(type, &src)
+}
 
+// this will not delete your source code, so you have to do that yourself bozo, also haha cstring
+load_shader_from_src :: proc(type: u32, source: ^cstring) -> u32 {
     shad: u32
     shad = gl.CreateShader(type)
-    gl.ShaderSource(shad, 1, &src, nil)
+    gl.ShaderSource(shad, 1, source, nil)
     gl.CompileShader(shad)
 
     succ: i32
     gl.GetShaderiv(shad, gl.COMPILE_STATUS, &succ)
-    if !bool(succ) { // this could be err.critical_proc_conc but its too long
-        fmt.eprintf("shader compilation failed! (%s)\n", path)
+    if !bool(succ) {
+        fmt.eprintln("shader compilation failed!")
         log: [512]u8
         gl.GetShaderInfoLog(shad, 512, nil, &log[0])
         error.critical(string(log[:]))
     }
 
-    delete(src)
-
     return shad
 }
 
-// output string must be deleted at some point (using "delete(src)", not "free(&src)")
+// output string must be deleted at some point
 load_shader_src :: proc(path: string, includes: []string = nil) -> cstring {
     data, ok := os.read_entire_file(path)
     error.critical_conc([]string { "failed to load shader! (", path, ")" }, !ok)
