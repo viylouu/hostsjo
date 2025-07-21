@@ -1,5 +1,21 @@
 /eng/lib/** linguist-detectable=false
 /imgui.ini linguist-detectable=false
+
+# code (vert and frag could be different idc)
 *.odin text diff=odin
 *.vert text diff=glsl
 *.frag text diff=glsl
+*.glsl text diff=glsl
+
+# supported audio
+*.mp3  binary
+*.wav  binary
+*.flac binary
+
+# supported textures
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+# see more here: https://hexdocs.pm/stb_image/StbImage.html
+
+*.md   text diff=markdown
