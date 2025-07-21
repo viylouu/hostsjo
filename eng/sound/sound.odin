@@ -149,6 +149,8 @@ update :: proc() {
             al.source_stop(this^.al_src)
 
             if !this^.looping {
+                al.delete_sources(1, &this^.al_src)
+
                 unordered_remove(&sounds, i)
                 i -= 1
             } else {
@@ -165,7 +167,7 @@ stfu :: proc() {
         al.delete_sources(1, &sounds[i]^.al_src)
     }
 
-    delete(sounds)
+    //delete(sounds)
 }
 
 play :: proc(sound: ^sound) {

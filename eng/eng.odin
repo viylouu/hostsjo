@@ -8,6 +8,7 @@ import "const"
 import "input"
 import "sound"
 
+import "core:fmt"
 import "core:strings"
 import "core:strconv"
 
@@ -26,15 +27,12 @@ __height: i32
 __area_width:  i32
 __area_height: i32
 
-@private
-_is_running: bool
-
-WF_DEFAULT :: WF_DRAW_LIB | WF_SOUND_LIB
+WF_DEFAULT :: WF_DRAW_LIB | WF_SOUND_LIB | WF_IMGUI
 
 WF_DRAW_LIB    :: 1 << 0    // allows you to use the eng/draw stuff instead of raw opengl or whatever
 WF_CONST_SCALE :: 1 << 1    // makes it so the draw area will not change
 WF_RESIZABLE   :: 1 << 2    // makes the window able to be resized
-WF_IMGUI       :: 1 << 3    // whether or not to initialize imgui
+WF_IMGUI       :: 1 << 3    // whether or not to initialize imgui, also for some reason eng segfaults on end without this
 WF_SOUND_LIB   :: 1 << 4    // allows you to use the eng/sound stuff instead of raw openal or whatever
 
 imgui_ver_string:  string
@@ -104,13 +102,11 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
 }
 
 loop :: proc(update,render: proc()) {
-    _is_running = true
-
     using glfw
     using time
 
     lastTime: f64
-    for !WindowShouldClose(__handle) && _is_running {
+    for !WindowShouldClose(__handle) {
         PollEvents()
 		input.poll(__handle)
 
@@ -176,12 +172,18 @@ end :: proc() {
         draw.end()
     }
 
-    SetFramebufferSizeCallback(__handle, nil)
+    // just being safe
+    glfw.SetKeyCallback(__handle, nil)
+    glfw.SetCharCallback(__handle, nil)
+    glfw.SetCursorPosCallback(__handle, nil)
+    glfw.SetMouseButtonCallback(__handle, nil)
+    glfw.SetScrollCallback(__handle, nil)
+    glfw.SetWindowCloseCallback(__handle, nil)
+    glfw.SetFramebufferSizeCallback(__handle, nil)
 
     MakeContextCurrent(nil)
 
     DestroyWindow(__handle)
-    __handle = nil
 
     Terminate()
 }
@@ -192,5 +194,6 @@ vsync :: proc(enabled: bool) {
 }
 
 stop :: proc() {
-    _is_running = false
+    using glfw
+    SetWindowShouldClose(__handle, true)
 }
