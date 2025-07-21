@@ -1,7 +1,7 @@
 package alc
 
 when ODIN_OS == .Windows {
-    foreign import alc "openal32.lib"
+    foreign import alc "../OpenAL32.lib"
 }
 when ODIN_OS == .Darwin {
     foreign import alc "system:OpenAL.framework"

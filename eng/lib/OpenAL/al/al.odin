@@ -1,7 +1,7 @@
 package al
 
 when ODIN_OS == .Windows {
-    foreign import al "openal32.lib"
+    foreign import al "../OpenAL32.lib"
 }
 when ODIN_OS == .Darwin {
     foreign import al "system:OpenAL.framework"
