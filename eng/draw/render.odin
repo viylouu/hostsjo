@@ -41,6 +41,7 @@ rect_rgba :: proc(x,y,w,h: i32, col: [4]u8) {
 	DrawArrays(TRIANGLES, 0, 6)
 
 	BindVertexArray(0)
+    UseProgram(0)
 }
 
 rect_rgb :: proc(x,y,w,h: i32, col: [3]u8) {
@@ -86,6 +87,8 @@ texture_rgba_wh :: proc(tex: texture.texture, x,y,w,h: i32, tint: [4]u8) {
     DrawArrays(TRIANGLES, 0, 6)
 
     BindVertexArray(0)
+    BindTexture(TEXTURE_2D, 0)
+    UseProgram(0)
 }
 
 texture_rgb_wh :: proc(tex: texture.texture, x,y,w,h: i32, tint: [3]u8) {
@@ -100,7 +103,15 @@ texture_rgb :: proc(tex: texture.texture, x,y: i32, tint: [3]u8) {
     texture_rgb_wh(tex, x,y, tex.width,tex.height, tint)
 }
 
-texture :: proc { texture_rgba_wh, texture_rgb_wh, texture_rgba, texture_rgb }
+texture_wh :: proc(tex: texture.texture, x,y,w,h: i32) {
+    texture_rgba_wh(tex, x,y,w,h, [4]u8 { 255,255,255,255 })
+}
+
+texture_nwh :: proc(tex: texture.texture, x,y: i32) {
+    texture_rgba(tex, x,y, [4]u8 { 255,255,255,255 })
+}
+
+texture :: proc { texture_rgba_wh, texture_rgb_wh, texture_rgba, texture_rgb, texture_wh, texture_nwh }
 
 
 texture_rgba_wh_f32 :: proc(tex: texture.texture, x,y,w,h: f32, tint: [4]u8) {
@@ -119,4 +130,12 @@ texture_rgb_f32 :: proc(tex: texture.texture, x,y: f32, tint: [3]u8) {
     texture_rgba_f32(tex, x,y, [4]u8 { tint.r,tint.g,tint.b, 255 })
 }
 
-ftexture :: proc { texture_rgba_wh_f32, texture_rgb_wh_f32, texture_rgba_f32, texture_rgb_f32 }
+texture_wh_f32 :: proc(tex: texture.texture, x,y,w,h: f32) {
+    texture_rgba_wh_f32(tex, x,y,w,h, [4]u8 { 255,255,255,255 })
+}
+
+texture_nwh_f32 :: proc(tex: texture.texture, x,y: f32) {
+    texture_rgba_f32(tex, x,y, [4]u8 { 255,255,255,255 })
+}
+
+ftexture :: proc { texture_rgba_wh_f32, texture_rgb_wh_f32, texture_rgba_f32, texture_rgb_f32, texture_wh_f32, texture_nwh_f32 }

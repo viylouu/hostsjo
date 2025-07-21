@@ -11,17 +11,16 @@ critical :: proc(msg: string, do_if: bool = true) {
 }
 
 critical_conc :: proc(msg: []string, do_if: bool = true) {
-    critical(strings.concatenate(msg), do_if)
+    if !do_if { return }
+    critical(strings.concatenate(msg))
 }
 
 critical_proc :: proc(msg: proc() -> string, do_if: bool = true) {
     if !do_if { return }
-    fmt.eprintln(msg())
-    os.exit(1)
+    critical(msg())
 }
 
 critical_proc_conc :: proc(msg: proc() -> []string, do_if: bool = true) {
     if !do_if { return }
-    fmt.eprintln(strings.concatenate(msg()))
-    os.exit(1)
+    critical(strings.concatenate(msg()))
 }

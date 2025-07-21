@@ -66,25 +66,11 @@ update :: proc(w,h: f32) {
 end :: proc() {
     using OpenGL
 
-    if bufs.rect.vbo != 0 {
-        DeleteBuffers(1, &bufs.rect.vbo)
-        bufs.rect.vbo = 0
-    } if bufs.rect.vao != 0 {
-        DeleteVertexArrays(1, &bufs.rect.vao)
-        bufs.rect.vao = 0
-    } if bufs.rect.prog != 0 {
-        DeleteProgram(bufs.rect.prog)
-        bufs.rect.prog = 0
-    }
+    if bufs.rect.vbo != 0  { DeleteBuffers(1, &bufs.rect.vbo) } 
+    if bufs.rect.vao != 0  { DeleteVertexArrays(1, &bufs.rect.vao) } 
+    if bufs.rect.prog != 0 { DeleteProgram(bufs.rect.prog) }
 
-    if bufs.tex.vbo != 0 {
-        DeleteBuffers(1, &bufs.tex.vbo)
-        bufs.tex.vbo = 0
-    } if bufs.tex.vao != 0 {
-        DeleteVertexArrays(1, &bufs.tex.vao)
-        bufs.tex.vao = 0
-    } if bufs.tex.prog != 0 {
-        DeleteProgram(bufs.tex.prog)
-        bufs.tex.prog = 0
-    }
+    if bufs.tex.vbo != 0  { DeleteBuffers(1, &bufs.tex.vbo) } 
+    if bufs.tex.vao != 0  { DeleteVertexArrays(1, &bufs.tex.vao) } 
+    if bufs.tex.prog != 0 { DeleteProgram(bufs.tex.prog) }
 }

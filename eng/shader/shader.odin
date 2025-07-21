@@ -87,7 +87,7 @@ load_shader_src :: proc(path: string, includes: []string = nil) -> cstring {
         for i in 0..<len(includes) {
             ssrc := load_shader_src(includes[i])
             append(&toconc, cast(string)ssrc)
-            //free(&ssrc)
+            delete(ssrc)
         }
 
         toincl := strings.concatenate(toconc[:])
