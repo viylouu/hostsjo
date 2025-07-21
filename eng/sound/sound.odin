@@ -4,7 +4,7 @@ import "core:fmt"
 import "core:math"
 import "core:strings"
 
-import "../error"
+import "../core/error"
 import "../lib/OpenAL/alc"
 import "../lib/OpenAL/al"
 import "../lib/dr_libs/dr_wav"

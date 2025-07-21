@@ -1,6 +1,6 @@
 package texture
 
-import "../error"
+import "../../core/error"
 
 import "core:strings"
 

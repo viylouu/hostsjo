@@ -1,20 +1,19 @@
-package eng // shorthand for: engine
+package eng // shorthand for engine
 
 import "error"
 import "callback"
 import "time"
-import "draw"
 import "const"
 import "input"
-import "sound"
+import "../render/draw"
+import "../sound"
 
-import "core:fmt"
 import "core:strings"
 import "core:strconv"
 
-import im "lib/imgui"
-import imgl "lib/imgui/opengl3"
-import imfw "lib/imgui/glfw"
+import im "../lib/imgui"
+import imgl "../lib/imgui/opengl3"
+import imfw "../lib/imgui/glfw"
 
 import "vendor:OpenGL"
 import "vendor:glfw"

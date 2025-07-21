@@ -1,8 +1,8 @@
 package main
 
-import "../../eng"
-import "../../eng/input"
-import "../../eng/draw"
+import eng "../../eng/core"
+import "../../eng/core/input"
+import "../../eng/render/draw"
 
 import "vendor:glfw"
 

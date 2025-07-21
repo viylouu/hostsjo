@@ -1,9 +1,9 @@
 package main
 
-import "../../eng"
-import "../../eng/input"
-import "../../eng/draw"
-import "../../eng/time"
+import eng "../../eng/core"
+import "../../eng/core/input"
+import "../../eng/render/draw"
+import "../../eng/core/time"
 import "../../eng/sound"
 
 import "core:math"

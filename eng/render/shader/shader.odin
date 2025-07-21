@@ -4,7 +4,7 @@ import "core:fmt"
 import "core:os"
 import "core:strings"
 
-import "../error"
+import "../../core/error"
 
 import gl "vendor:OpenGL"
 
