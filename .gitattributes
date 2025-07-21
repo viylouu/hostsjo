@@ -1,2 +1,5 @@
 /eng/lib/** linguist-detectable=false
-
+/imgui.ini linguist-detectable=false
+*.odin text diff=odin
+*.vert text diff=glsl
+*.frag text diff=glsl
