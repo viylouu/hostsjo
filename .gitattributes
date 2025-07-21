@@ -1,4 +1,8 @@
 /eng/lib/fastnoiselite/* linguist-detectable=false
 /eng/lib/imgui/* linguist-detectable=false
 /eng/lib/imgui/glfw/* linguist-detectable=false
-/etc/lib/imgui/opengl3/* linguist-detectable=false
+/eng/lib/imgui/opengl3/* linguist-detectable=false
+/eng/lib/dr_libs/* linguist-detectable=false
+/eng/lib/dr_libs/dr_wav* linguist-detectable=false
+/eng/lib/dr_libs/dr_mp3* linguist-detectable=false
+/eng/lib/dr_libs/dr_flac* linguist-detectable=false
