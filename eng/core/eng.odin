@@ -86,12 +86,14 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
         imgl.Init(strings.unsafe_string_to_cstring(imgui_ver_string))
     }
 
-    __width, __height = GetFramebufferSize(__handle)
-
+    __width, __height = width, height
     __area_width  = width
     __area_height = height
 
     OpenGL.Viewport(0,0,__area_width,__area_height)
+
+    SetWindowSize(__handle, width + 1, height)
+    SetWindowSize(__handle, width, height)
 
 	if const.wflag_draw_lib {
 		draw.init(f32(__area_width),f32(__area_height))
