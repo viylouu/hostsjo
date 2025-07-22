@@ -4,6 +4,7 @@ import "core:fmt"
 import "core:math"
 
 import "../texture"
+import "../../core/error"
 
 import "vendor:OpenGL"
 
@@ -224,12 +225,6 @@ texture_rgba_wh_samp_f32 :: proc(tex: texture.texture, x,y,w,h: f32, samp_x,samp
     BindVertexArray(0)
     BindTexture(TEXTURE_2D, 0)
     UseProgram(0)
-
-    err := OpenGL.GetError()
-
-    if err != OpenGL.NO_ERROR {
-        fmt.println("GL ERROR:", err)
-    }
 }
 
 texture_rgb_wh_samp_f32 :: proc(tex: texture.texture, x,y,w,h: f32, samp_x,samp_y,samp_w,samp_h: f32, tint: [3]u8) {

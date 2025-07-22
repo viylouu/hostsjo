@@ -97,7 +97,7 @@ load :: proc(path: string) -> sound {
         is_stereo = mp3.channels == 2
 
         drmp3_uninit(&mp3)
-    } else { error.critical_conc([]string { "unsupported audio file format! '", path, "'" }) }
+    } else do error.critical_conc([]string { "unsupported audio file format! '", path, "'" })
 
     data := make([]i16, total_samples)
 
@@ -149,9 +149,7 @@ update :: proc() {
 
                 unordered_remove(&sounds, i)
                 i -= 1
-            } else {
-                al.source_play(this^.al_src)
-            }
+            } else do al.source_play(this^.al_src)
         }
     }
 }
@@ -162,8 +160,6 @@ stfu :: proc() {
 
         al.delete_sources(1, &sounds[i]^.al_src)
     }
-
-    //delete(sounds)
 }
 
 play :: proc(sound: ^sound) {

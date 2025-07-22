@@ -26,14 +26,14 @@ main :: proc() {
             using glfw
             using time
 
-            if is_key_press(KEY_ESCAPE) { stop() }
+            if is_key_press(KEY_ESCAPE) do stop()
 
             SPEED :f32: 256
 
-            if is_key_hold(KEY_W) { pos_y -= SPEED * delta32 }
-            if is_key_hold(KEY_A) { pos_x -= SPEED * delta32 }
-            if is_key_hold(KEY_S) { pos_y += SPEED * delta32 }
-            if is_key_hold(KEY_D) { pos_x += SPEED * delta32 }
+            if is_key_hold(KEY_W) do pos_y -= SPEED * delta32
+            if is_key_hold(KEY_A) do pos_x -= SPEED * delta32
+            if is_key_hold(KEY_S) do pos_y += SPEED * delta32
+            if is_key_hold(KEY_D) do pos_x += SPEED * delta32
 
             if is_key_press(KEY_F) { 
                 fullscreen = !fullscreen

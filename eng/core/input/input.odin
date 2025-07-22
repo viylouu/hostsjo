@@ -19,15 +19,15 @@ poll :: proc(handle: fw.WindowHandle) {
 	for i in 0..<349 {
         lstate := keys[i]
 		keys[i] = cast(state)fw.GetKey(handle, i32(i))
-        if keys[i] == .press && (lstate == .press || lstate == .hold)       { keys[i] = .hold }
-        if keys[i] == .release && (lstate == .release || lstate == .static) { keys[i] = .static }
+        if keys[i] == .press && (lstate == .press || lstate == .hold)       do keys[i] = .hold
+        if keys[i] == .release && (lstate == .release || lstate == .static) do keys[i] = .static
 	}
 
 	for i in 0..<8 {
         lstate := mouse[i]
 		mouse[i] = cast(state)fw.GetMouseButton(handle, i32(i))
-        if mouse[i] == .press && (lstate == .press || lstate == .hold)       { mouse[i] = .hold }
-        if mouse[i] == .release && (lstate == .release || lstate == .static) { mouse[i] = .static }
+        if mouse[i] == .press && (lstate == .press || lstate == .hold)       do mouse[i] = .hold
+        if mouse[i] == .release && (lstate == .release || lstate == .static) do mouse[i] = .static
     }
 
 	mouse_x64, mouse_y64 := fw.GetCursorPos(handle)

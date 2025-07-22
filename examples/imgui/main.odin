@@ -28,7 +28,7 @@ main :: proc() {
             using input
             using glfw
 
-            if is_key_press(KEY_ESCAPE) { stop() }
+            if is_key_press(KEY_ESCAPE) do stop()
         },
         proc() /* render */ {
             using draw

@@ -25,7 +25,7 @@ main :: proc() {
     music = sound.load("examples/sound/sound.wav")
     defer sound.unload(&music)
 
-    introfade = sound.load("examples/sound/introfade.wav")
+   introfade = sound.load("examples/sound/introfade.wav")
     defer sound.unload(&introfade)
 
     sound.play(&music)
@@ -36,9 +36,9 @@ main :: proc() {
             using glfw
             using time
 
-            if is_key_press(KEY_ESCAPE) { stop() }
+            if is_key_press(KEY_ESCAPE) do stop()
 
-            if is_mouse_press(MOUSE_BUTTON_LEFT) { sound.play(&introfade) }
+            if is_mouse_press(MOUSE_BUTTON_LEFT) do sound.play(&introfade)
 
             music.pitch = math.sin(time32*32) + 1
         },

@@ -95,13 +95,9 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     SetWindowSize(__handle, width + 1, height)
     SetWindowSize(__handle, width, height)
 
-	if const.wflag_draw_lib {
-		draw.init(f32(__area_width),f32(__area_height))
-	}
+	if const.wflag_draw_lib do draw.init(f32(__area_width),f32(__area_height))
 
-    if const.wflag_sound_lib {
-        sound.init()
-    }
+    if const.wflag_sound_lib do sound.init()
 }
 
 loop :: proc(update,render: proc()) {
@@ -129,9 +125,7 @@ loop :: proc(update,render: proc()) {
             __area_height = __height
         } 
 
-        if const.wflag_draw_lib {
-            draw.update(f32(__width),f32(__height))
-        }
+        if const.wflag_draw_lib do draw.update(f32(__width),f32(__height))
 
         if const.wflag_imgui {
             imfw.NewFrame()
@@ -142,9 +136,7 @@ loop :: proc(update,render: proc()) {
         update()
         render()
 
-        if const.wflag_sound_lib {
-            sound.update()
-        }
+        if const.wflag_sound_lib do sound.update()
 
         if const.wflag_imgui {
             im.Render()
@@ -171,9 +163,7 @@ end :: proc() {
         sound.end()
     }
 
-    if const.wflag_draw_lib {
-        draw.end()
-    }
+    if const.wflag_draw_lib do draw.end()
 
     // just being safe
     glfw.SetKeyCallback(__handle, nil)
