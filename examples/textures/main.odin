@@ -8,7 +8,7 @@ import "../../eng/render/texture"
 
 import "vendor:glfw"
 
-tex: texture.texture
+tex: texture.Texture
 
 main :: proc() {
     using eng

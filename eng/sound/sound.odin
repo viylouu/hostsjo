@@ -11,9 +11,9 @@ import "../lib/dr_libs/dr_wav"
 import "../lib/dr_libs/dr_flac"
 import "../lib/dr_libs/dr_mp3"
 
-sounds: [dynamic]^soundInst
+sounds: [dynamic]^Sound_Inst
 
-sound :: struct {
+Sound :: struct {
     data: []i16,
     is_stereo: bool,
     al_buf: u32,
@@ -22,10 +22,10 @@ sound :: struct {
     sample_rate: u32
 }
 
-soundInst :: struct {
+Sound_Inst :: struct {
     al_src: u32,
     looping: bool,
-    sound: ^sound
+    sound: ^Sound
 }
 
 device: alc.Device
@@ -47,7 +47,7 @@ end :: proc() {
     alc.close_device(device)
 }
 
-load :: proc(path: string) -> sound {
+load :: proc(path: string) -> Sound {
     using dr_wav
     using dr_mp3
     using dr_flac
@@ -113,7 +113,7 @@ load :: proc(path: string) -> sound {
     format := is_stereo? al.FORMAT_STEREO16 : al.FORMAT_MONO16
     al.buffer_data(buf, format, &data[0], i32(len(data) * size_of(i16)), i32(sample_rate))
 
-    output := sound {
+    output := Sound {
         data = data,
         is_stereo = is_stereo,
         al_buf = buf,
@@ -125,7 +125,7 @@ load :: proc(path: string) -> sound {
     return output
 }
 
-unload :: proc(sound: ^sound) {
+unload :: proc(sound: ^Sound) {
     al.delete_buffers(1, &sound^.al_buf)
     delete(sound^.data)
 }
@@ -162,13 +162,13 @@ stfu :: proc() {
     }
 }
 
-play :: proc(sound: ^sound) {
+play :: proc(sound: ^Sound) {
     src: u32
     al.gen_sources(1, &src)
     al.sourcei(src, al.BUFFER, i32(sound^.al_buf))
     al.source_play(src)
 
-    inst := new(soundInst)
+    inst := new(Sound_Inst)
     inst^.al_src = src
     inst^.looping = false
     inst^.sound = sound

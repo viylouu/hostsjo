@@ -7,7 +7,7 @@ import "core:strings"
 import "vendor:OpenGL"
 import "vendor:stb/image"
 
-texture :: struct {
+Texture :: struct {
     glid: u32,
     width, height: i32
     //get_at: proc(x,y: i32) -> [4]u8,
@@ -16,7 +16,7 @@ texture :: struct {
 }
 
 // all textures must be freed using texture.free(tex)
-load :: proc(path: string) -> texture {
+load :: proc(path: string) -> Texture {
     w,h,channels: i32
     cpath := strings.unsafe_string_to_cstring(path)
     data := image.load(cpath, &w,&h,&channels, 4)
@@ -40,10 +40,10 @@ load :: proc(path: string) -> texture {
 
     BindTexture(TEXTURE_2D, 0)
 
-    return texture{ glid = glid, width = w, height = h }
+    return Texture{ glid = glid, width = w, height = h }
 }
 
-unload :: proc(tex: ^texture) {
+unload :: proc(tex: ^Texture) {
     using OpenGL
     DeleteTextures(1, &tex^.glid)
     tex^.glid   = 0

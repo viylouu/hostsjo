@@ -11,8 +11,8 @@ import "core:math"
 
 import "vendor:glfw"
 
-music: sound.sound
-introfade: sound.sound
+music: sound.Sound
+introfade: sound.Sound
 
 main :: proc() {
     using eng
