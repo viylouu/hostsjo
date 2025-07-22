@@ -1,14 +1,8 @@
 package alc
 
-when ODIN_OS == .Windows {
-    foreign import alc "../OpenAL32.lib"
-}
-when ODIN_OS == .Darwin {
-    foreign import alc "system:OpenAL.framework"
-}
-when ODIN_OS == .Linux {
-    foreign import alc "system:libopenal.so"
-}
+when ODIN_OS == .Windows do foreign import alc "../OpenAL32.lib"
+when ODIN_OS == .Darwin do foreign import alc "system:OpenAL.framework"
+when ODIN_OS == .Linux do foreign import alc "system:libopenal.so"
 
 import al ".."
 

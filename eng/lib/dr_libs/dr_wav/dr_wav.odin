@@ -136,12 +136,8 @@ to read and convert audio data to 32-bit floating point, signed 32-bit integer a
 
 package dr_wav
 
-when ODIN_OS == .Windows {
-    foreign import lib "libdr_wav.lib"
-}
-when ODIN_OS == .Linux {
-    foreign import lib "libdr_wav.a"
-}
+when ODIN_OS == .Windows do foreign import lib "libdr_wav.lib"
+when ODIN_OS == .Linux do foreign import lib "libdr_wav.a"
 
 import "core:c"
 

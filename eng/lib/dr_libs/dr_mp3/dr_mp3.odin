@@ -60,12 +60,8 @@ Disable SIMD optimizations.
 */
 package dr_mp3
 
-when ODIN_OS == .Windows {
-    foreign import lib "libdr_mp3.lib"
-}
-when ODIN_OS == .Linux {
-    foreign import lib "libdr_mp3.a"
-}
+when ODIN_OS == .Windows do foreign import lib "libdr_mp3.lib"
+when ODIN_OS == .Linux do foreign import lib "libdr_mp3.a"
 
 import "core:c"
 
