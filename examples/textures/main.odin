@@ -31,7 +31,7 @@ main :: proc() {
             using draw
             clear(0,0,0)
 
-            texture(tex, 0,0, 800,600, [3]u8{255,0,0})
+            texture(tex, 0,0, eng.__width,eng.__height, [3]u8{255,0,0})
         }
     )
 }

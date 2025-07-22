@@ -8,6 +8,7 @@ import "input"
 import "../render/draw"
 import "../sound"
 
+import "core:fmt"
 import "core:strings"
 import "core:strconv"
 
@@ -64,6 +65,7 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     SetFramebufferSizeCallback(__handle, callback.__fbcb_size)
 
     OpenGL.load_up_to(int(const.GL_MAJOR), const.GL_MINOR, gl_set_proc_address)
+    fmt.println("gl ver: ", OpenGL.GetString(OpenGL.VERSION))
 
     if const.wflag_imgui {
         im.CHECKVERSION()

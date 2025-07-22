@@ -52,11 +52,13 @@ init :: proc(w,h: f32) {
 
         bufs.tex.prog = load_program("data/shaders/eng/tex.vert", "data/shaders/eng/tex.frag")
 
-        bufs.tex.loc_pos  = GetUniformLocation(bufs.tex.prog, "pos")
-        bufs.tex.loc_size = GetUniformLocation(bufs.tex.prog, "size")
-        bufs.tex.loc_tint = GetUniformLocation(bufs.tex.prog, "tint")
-        bufs.tex.loc_proj = GetUniformLocation(bufs.tex.prog, "proj")
-        bufs.tex.loc_tex  = GetUniformLocation(bufs.tex.prog, "tex")
+        bufs.tex.loc_pos       = GetUniformLocation(bufs.tex.prog, "pos")
+        bufs.tex.loc_size      = GetUniformLocation(bufs.tex.prog, "size")
+        bufs.tex.loc_samp_pos  = GetUniformLocation(bufs.tex.prog, "samp_pos")
+        bufs.tex.loc_samp_size = GetUniformLocation(bufs.tex.prog, "samp_size")
+        bufs.tex.loc_tint      = GetUniformLocation(bufs.tex.prog, "tint")
+        bufs.tex.loc_proj      = GetUniformLocation(bufs.tex.prog, "proj")
+        bufs.tex.loc_tex       = GetUniformLocation(bufs.tex.prog, "tex")
 }
 
 update :: proc(w,h: f32) {
