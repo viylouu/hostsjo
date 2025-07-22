@@ -1,6 +1,7 @@
 package main
 
 import eng "../../eng/core"
+import "../../eng/core/util"
 import "../../eng/core/input"
 import "../../eng/render/draw"
 
@@ -20,7 +21,7 @@ main :: proc() {
     init("imgui example",800,600, WF_DRAW_LIB | WF_IMGUI)
     defer end()
 
-    vsync(true)
+    util.vsync(true)
 
     loop(
         proc() /* update */ {

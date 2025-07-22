@@ -1,6 +1,7 @@
 package main
 
 import eng "../../eng/core"
+import "../../eng/core/util"
 import "../../eng/core/input"
 import "../../eng/render/draw"
 import "../../eng/render/texture"
@@ -15,7 +16,7 @@ main :: proc() {
     init("window example",800,600)
     defer end()
 
-    vsync(true)
+    util.vsync(true)
 
     tex = texture.load("examples/textures/tex.png")
     defer texture.unload(&tex)

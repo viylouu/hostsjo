@@ -1,11 +1,14 @@
 package main
 
 import eng "../../eng/core"
+import "../../eng/core/util"
 import "../../eng/core/input"
 import "../../eng/core/time"
 import "../../eng/render/draw"
 
 import "vendor:glfw"
+
+fullscreen: bool
 
 pos_x, pos_y: f32
 
@@ -15,7 +18,7 @@ main :: proc() {
     init("window example",800,600)
     defer end()
 
-    vsync(true)
+    util.vsync(true)
 
     loop(
         proc() /* update */ {
@@ -31,6 +34,11 @@ main :: proc() {
             if is_key_hold(KEY_A) { pos_x -= SPEED * delta32 }
             if is_key_hold(KEY_S) { pos_y += SPEED * delta32 }
             if is_key_hold(KEY_D) { pos_x += SPEED * delta32 }
+
+            if is_key_press(KEY_F) { 
+                fullscreen = !fullscreen
+                util.fullscreen(fullscreen) 
+            }
         },
         proc() /* render */ {
             using draw

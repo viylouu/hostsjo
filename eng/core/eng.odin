@@ -189,11 +189,6 @@ end :: proc() {
     Terminate()
 }
 
-vsync :: proc(enabled: bool) {
-    using glfw
-    SwapInterval(enabled? 1 : 0)
-}
-
 stop :: proc() {
     using glfw
     SetWindowShouldClose(__handle, true)
