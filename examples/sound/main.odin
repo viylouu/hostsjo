@@ -25,7 +25,7 @@ main :: proc() {
     music = sound.load("examples/sound/sound.wav")
     defer sound.unload(&music)
 
-   introfade = sound.load("examples/sound/introfade.wav")
+    introfade = sound.load("examples/sound/introfade.wav")
     defer sound.unload(&introfade)
 
     sound.play(&music)
