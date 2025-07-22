@@ -114,12 +114,9 @@ to differences in corrupted stream recorvery logic between the two APIs.
 */
 package dr_flac
 
-when ODIN_OS == .Windows {
-    foreign import lib "libdr_flac.lib"
-}
-when ODIN_OS == .Linux {
-    foreign import lib "libdr_flac.a"
-}
+when ODIN_OS == .Windows do foreign import lib "libdr_flac.lib"
+when ODIN_OS == .Linux do foreign import lib "libdr_flac.a"
+
 
 import "core:c"
 
