@@ -5,14 +5,14 @@ import "../../eng/core/util"
 import "../../eng/core/input"
 import "../../eng/render/draw"
 import "../../eng/core/time"
-import "../../eng/sound"
+import au "../../eng/sound" // au -> audio
 
 import "core:math"
 
 import "vendor:glfw"
 
-music: sound.Sound
-introfade: sound.Sound
+music: au.Sound
+introfade: au.Sound
 
 main :: proc() {
     using eng
@@ -22,13 +22,13 @@ main :: proc() {
 
     util.vsync(true)
 
-    music = sound.load("examples/sound/sound.wav")
-    defer sound.unload(&music)
+    music = au.load("examples/sound/sound.wav")
+    defer au.unload(&music)
 
-    introfade = sound.load("examples/sound/introfade.wav")
-    defer sound.unload(&introfade)
+    introfade = au.load("examples/sound/introfade.wav")
+    defer au.unload(&introfade)
 
-    sound.play(&music)
+    au.play(&music)
 
     loop(
         proc() /* update */ {
@@ -38,7 +38,7 @@ main :: proc() {
 
             if is_key_press(KEY_ESCAPE) do stop()
 
-            if is_mouse_press(MOUSE_BUTTON_LEFT) do sound.play(&introfade)
+            if is_mouse_press(MOUSE_BUTTON_LEFT) do au.play(&introfade)
 
             music.pitch = math.sin(time32*32) + 1
         },
