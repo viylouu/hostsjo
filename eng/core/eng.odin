@@ -86,8 +86,8 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
         imgl.Init(strings.unsafe_string_to_cstring(imgui_ver_string))
     }
 
-    __width       = width
-    __height      = height
+    __width, __height = GetFramebufferSize(__handle)
+
     __area_width  = width
     __area_height = height
 
