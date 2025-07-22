@@ -2,13 +2,13 @@ package main
 
 import eng "../../eng/core"
 import "../../eng/core/util"
-import "../../eng/core/input"
 import "../../eng/render/draw"
-import "../../eng/render/texture"
+import "../../eng/core/input"
+import tx "../../eng/render/texture"
 
 import "vendor:glfw"
 
-tex: texture.Texture
+tex: tx.Texture
 
 main :: proc() {
     using eng
@@ -18,8 +18,8 @@ main :: proc() {
 
     util.vsync(true)
 
-    tex = texture.load("examples/textures/tex.png")
-    defer texture.unload(&tex)
+    tex = tx.load("examples/textures/tex.png")
+    defer tx.unload(&tex)
 
     loop(
         proc() /* update */ {
