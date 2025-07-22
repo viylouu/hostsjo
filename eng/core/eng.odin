@@ -92,6 +92,7 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
 
     OpenGL.Viewport(0,0,__area_width,__area_height)
 
+    // fixes a bug where drawing doesent show up on windows until window is resized
     SetWindowSize(__handle, width + 1, height)
     SetWindowSize(__handle, width, height)
 
