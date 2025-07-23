@@ -19,22 +19,15 @@ load_program :: proc(vertex_path, fragment_path: string, vertex_include: []strin
     return load_program_from_src(&vsrc, &fsrc)
 }
 
-// this will not delete your source code, so you have to do that yourself bozo, also haha cstring
-load_program_from_src :: proc(vertex_source, fragment_source: ^cstring) -> u32 {
-    vsh := load_shader_from_src(gl.VERTEX_SHADER,   vertex_source)
-    fsh := load_shader_from_src(gl.FRAGMENT_SHADER, fragment_source)
-
+// this will not delete your shaders
+compile_program :: proc (shaders: []u32) -> u32 {
     s_succ: i32
 
     s_prog: u32
     s_prog = gl.CreateProgram()
 
-    gl.AttachShader(s_prog, vsh)
-    gl.AttachShader(s_prog, fsh)
+    for sh in shaders do gl.AttachShader(s_prog, sh)
     gl.LinkProgram(s_prog)
-
-    gl.DeleteShader(vsh)
-    gl.DeleteShader(fsh)
 
     gl.GetProgramiv(s_prog, gl.LINK_STATUS, &s_succ)
     if !bool(s_succ) {
@@ -43,6 +36,20 @@ load_program_from_src :: proc(vertex_source, fragment_source: ^cstring) -> u32 {
         gl.GetProgramInfoLog(s_prog, 512, nil, &log[0])
         error.critical(string(log[:]))
     }
+
+    return s_prog
+
+}
+
+// this will not delete your source code, so you have to do that yourself bozo, also haha cstring
+load_program_from_src :: proc(vertex_source, fragment_source: ^cstring) -> u32 {
+    vsh := load_shader_from_src(gl.VERTEX_SHADER,   vertex_source)
+    fsh := load_shader_from_src(gl.FRAGMENT_SHADER, fragment_source)
+
+    s_prog := compile_program([]u32{vsh, fsh})
+
+    gl.DeleteShader(vsh)
+    gl.DeleteShader(fsh)
 
     return s_prog
 }
