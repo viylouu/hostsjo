@@ -29,7 +29,7 @@ init :: proc(w,h: f32) {
         BindBuffer(ARRAY_BUFFER, 0)
         BindVertexArray(0)
 
-        bufs.rect.prog = load_program("data/shaders/eng/rect.vert", "data/shaders/eng/rect.frag")
+        bufs.rect.prog = load_program_from_src(&rect_vert, &rect_frag)
 
         bufs.rect.loc_pos  = GetUniformLocation(bufs.rect.prog, "pos")
         bufs.rect.loc_size = GetUniformLocation(bufs.rect.prog, "size")
@@ -50,7 +50,7 @@ init :: proc(w,h: f32) {
         BindBuffer(ARRAY_BUFFER, 0)
         BindVertexArray(0)
 
-        bufs.tex.prog = load_program("data/shaders/eng/tex.vert", "data/shaders/eng/tex.frag")
+        bufs.tex.prog = load_program_from_src(&tex_vert, &tex_frag)
 
         bufs.tex.loc_pos       = GetUniformLocation(bufs.tex.prog, "pos")
         bufs.tex.loc_size      = GetUniformLocation(bufs.tex.prog, "size")
