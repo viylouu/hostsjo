@@ -91,32 +91,34 @@ load_shader_src :: proc(path: string, includes: []string = nil) -> cstring {
 
     if includes != nil {
         ver := ""
-        arrostr: [dynamic]string
+        no_ver, _ := strings.builder_make()
 
         for line in strings.split_lines_iterator(&str) {
             if ver != "" {
-                append(&arrostr, line)
-                append(&arrostr, "\n")
+                strings.write_string(&no_ver, line)
+                strings.write_rune(&no_ver, '\n')
                 continue
             }   ver = line
         }
 
-        ostr := strings.concatenate(arrostr[:])
+        nv := strings.clone(strings.to_string(no_ver))
 
-        toconc: [dynamic]string
+        to_incl := strings.builder_make()
 
         for i in 0..<len(includes) {
             ssrc := load_shader_src(includes[i])
-            append(&toconc, cast(string)ssrc)
+            strings.write_string(&to_incl, cast(string)ssrc)
             delete(ssrc)
         }
 
-        toincl := strings.concatenate(toconc[:])
+        ti := strings.clone(strings.to_string(to_incl))
 
-        str = strings.concatenate([]string {ver, toincl, ostr})
+        str = strings.concatenate([]string {ver, ti, nv})
 
-        delete(ostr)
-        delete(toincl)
+        delete(nv)
+        delete(ti)
+        strings.builder_destroy(&no_ver)
+        strings.builder_destroy(&to_incl)
     }
 
     res := strings.clone_to_cstring(str)
