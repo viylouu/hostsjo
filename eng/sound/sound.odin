@@ -52,7 +52,7 @@ end :: proc() {
     alc.close_device(device)
 }
 
-load_from_data :: proc(data: ^cstring, type: file_type) -> Sound {
+load_from_data :: proc(data: ^[]u8, type: file_type) -> Sound {
     using dr_wav
     using dr_mp3
     using dr_flac
@@ -62,12 +62,12 @@ load_from_data :: proc(data: ^cstring, type: file_type) -> Sound {
     is_stereo: bool
     sample_rate: u32
 
-    data_size :uint= size_of(cstring) * len(data)
+    data_size :uint= len(data^)
 
     switch type {
     case .wav:
         wav: drwav
-        error.critical("failed to load audio data!", drwav_init_memory(&wav, data, data_size, nil) == 0)
+        error.critical("failed to load audio data!", drwav_init_memory(&wav, raw_data(data[:]), data_size, nil) == 0)
 
         total_samples = wav.totalPCMFrameCount * u64(wav.channels)
         samples = make([^]f32, total_samples)
@@ -80,7 +80,7 @@ load_from_data :: proc(data: ^cstring, type: file_type) -> Sound {
         drwav_uninit(&wav)
 
     case .flac:
-        flac := drflac_open_memory(data, data_size, nil)
+        flac := drflac_open_memory(raw_data(data[:]), data_size, nil)
         error.critical("failed to load audio data!", flac == nil)
 
         total_samples = flac^.totalPCMFrameCount * u64(flac^.channels)
@@ -95,7 +95,7 @@ load_from_data :: proc(data: ^cstring, type: file_type) -> Sound {
 
     case .mp3:
         mp3: drmp3
-        error.critical("failed to load audio data!", drmp3_init_memory(&mp3, data, data_size, nil) == 0)
+        error.critical("failed to load audio data!", drmp3_init_memory(&mp3, raw_data(data[:]), data_size, nil) == 0)
 
         total_samples = mp3.totalPCMFrameCount * u64(mp3.channels)
         samples = make([^]f32, total_samples)
@@ -108,22 +108,22 @@ load_from_data :: proc(data: ^cstring, type: file_type) -> Sound {
         drmp3_uninit(&mp3)
     }
 
-    data := make([]i16, total_samples)
+    dec := make([]i16, total_samples)
 
-    for i in 0..<len(data) {
+    for i in 0..<len(dec) {
         raw_float := samples[i]
         conv_float := raw_float * 32767
-        data[i] = i16(conv_float)
+        dec[i] = i16(conv_float)
     }
 
     buf: u32
     al.gen_buffers(1, &buf)
 
     format := is_stereo? al.FORMAT_STEREO16 : al.FORMAT_MONO16
-    al.buffer_data(buf, format, &data[0], i32(len(data) * size_of(i16)), i32(sample_rate))
+    al.buffer_data(buf, format, &dec[0], i32(len(dec) * size_of(i16)), i32(sample_rate))
 
     output := Sound {
-        data = data,
+        data = dec,
         is_stereo = is_stereo,
         al_buf = buf,
         volume = 1,
@@ -141,13 +141,10 @@ load :: proc(path: string) -> Sound {
     else if strings.has_suffix(path, ".flac") do type = .flac
     else do error.critical_conc([]string { "unrecognized file type '", path, "'!" })
 
-    data, err := os.read_entire_file(path)
-    error.critical_conc([]string { "failed to read file data '", path, "'!" }, err)
-
-    cdata := strings.clone_to_cstring(string(data))
+    data, succ := os.read_entire_file(path)
+    error.critical_conc([]string { "failed to read file data '", path, "'!" }, !succ)
     
-    snd := load_from_data(&cdata, type)
-    delete(cdata)
+    snd := load_from_data(&data, type)
     delete(data)
 
     return snd

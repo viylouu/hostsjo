@@ -1,1 +1,1 @@
-odin build examples/textures
+odin build examples/sound
