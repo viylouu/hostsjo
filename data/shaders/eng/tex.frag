@@ -10,5 +10,9 @@ in vec2 uvs;
 out vec4 fCol;
 
 void main() {
-	fCol = texture(tex, uvs * samp_size + samp_pos) * tint;
+	vec4 col = texture(tex, uvs * samp_size + samp_pos) * tint;
+    if (col.a == 0) {
+        discard;
+    }
+    fCol = col;
 }

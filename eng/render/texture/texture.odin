@@ -16,7 +16,7 @@ Texture :: struct {
     //apply: proc()
 }
 
-// all textures must be freed using texture.free(tex)
+// all textures must be freed using texture.unload(tex)
 load :: proc(path: string) -> Texture {
     data, succ := os.read_entire_file(path)
     error.critical_conc([]string { "failed to open file '", path, "'!" }, !succ)
@@ -27,11 +27,11 @@ load :: proc(path: string) -> Texture {
     return tex
 }
 
-// all textures must be freed using texture.free(tex)
+// all textures must be freed using texture.unload(tex)
 load_from_data :: proc(data: []u8) -> Texture {
     w,h,channels: i32
     img_data := image.load_from_memory(raw_data(data), cast(i32)len(data), &w,&h,&channels, 4)
-    error.critical( "failed to load texture!", img_data == nil)
+    error.critical("failed to load texture!", img_data == nil)
     error.critical("texture does not have 4 channels!", channels != 4)
 
     defer image.image_free(img_data)

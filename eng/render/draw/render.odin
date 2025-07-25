@@ -102,11 +102,11 @@ texture_rgb_wh :: proc(tex: texture.Texture, x,y,w,h: i32, tint: [3]u8) {
 }
 
 texture_rgba_samp :: proc(tex: texture.Texture, x,y: i32, samp_x,samp_y,samp_w,samp_h: i32, tint: [4]u8) {
-    texture_rgba_wh_samp(tex, x,y, tex.width,tex.height, samp_x,samp_y,samp_w,samp_h, tint)
+    texture_rgba_wh_samp(tex, x,y, samp_w,samp_h, samp_x,samp_y,samp_w,samp_h, tint)
 }
 
 texture_rgb_samp :: proc(tex: texture.Texture, x,y: i32, samp_x,samp_y,samp_w,samp_h: i32, tint: [3]u8) {
-    texture_rgb_wh_samp(tex, x,y, tex.width,tex.height, samp_x,samp_y,samp_w,samp_h, tint)
+    texture_rgb_wh_samp(tex, x,y, samp_w,samp_h, samp_x,samp_y,samp_w,samp_h, tint)
 }
 
 texture_rgba :: proc(tex: texture.Texture, x,y: i32, tint: [4]u8) {
@@ -150,11 +150,11 @@ texture_rgb_wh_int :: proc(tex: texture.Texture, x,y,w,h: int, tint: [3]u8) {
 }
 
 texture_rgba_samp_int :: proc(tex: texture.Texture, x,y: int, samp_x,samp_y,samp_w,samp_h: int, tint: [4]u8) {
-    texture_rgba_wh_samp_int(tex, x,y, int(tex.width),int(tex.height), samp_x,samp_y,samp_w,samp_h, tint)
+    texture_rgba_wh_samp_int(tex, x,y, samp_w,samp_h, samp_x,samp_y,samp_w,samp_h, tint)
 }
 
 texture_rgb_samp_int :: proc(tex: texture.Texture, x,y: int, samp_x,samp_y,samp_w,samp_h: int, tint: [3]u8) {
-    texture_rgb_wh_samp_int(tex, x,y, int(tex.width),int(tex.height), samp_x,samp_y,samp_w,samp_h, tint)
+    texture_rgb_wh_samp_int(tex, x,y, samp_w,samp_h, samp_x,samp_y,samp_w,samp_h, tint)
 }
 
 texture_rgba_int :: proc(tex: texture.Texture, x,y: int, tint: [4]u8) {
@@ -240,11 +240,11 @@ texture_rgb_wh_f32 :: proc(tex: texture.Texture, x,y,w,h: f32, tint: [3]u8) {
 }
 
 texture_rgba_samp_f32 :: proc(tex: texture.Texture, x,y: f32, samp_x,samp_y,samp_w,samp_h: f32, tint: [4]u8) {
-    texture_rgba_wh_samp_f32(tex, x,y, f32(tex.width),f32(tex.height), samp_x,samp_y,samp_w,samp_h, tint)
+    texture_rgba_wh_samp_f32(tex, x,y, samp_w,samp_h, samp_x,samp_y,samp_w,samp_h, tint)
 }
 
 texture_rgb_samp_f32 :: proc(tex: texture.Texture, x,y: f32, samp_x,samp_y,samp_w,samp_h: f32, tint: [3]u8) {
-    texture_rgb_wh_samp_f32(tex, x,y, f32(tex.width),f32(tex.height), samp_x,samp_y,samp_w,samp_h, tint)
+    texture_rgb_wh_samp_f32(tex, x,y, samp_w,samp_h, samp_x,samp_y,samp_w,samp_h, tint)
 }
 
 texture_rgba_f32 :: proc(tex: texture.Texture, x,y: f32, tint: [4]u8) {
@@ -260,7 +260,7 @@ texture_wh_samp_f32 :: proc(tex: texture.Texture, x,y,w,h: f32, samp_x,samp_y,sa
 }
 
 texture_nwh_samp_f32 :: proc(tex: texture.Texture, x,y: f32, samp_x,samp_y,samp_w,samp_h: f32) {
-    texture_wh_samp_f32(tex, x,y, f32(tex.width),f32(tex.height), samp_x,samp_y,samp_w,samp_h)
+    texture_wh_samp_f32(tex, x,y, samp_w,samp_h, samp_x,samp_y,samp_w,samp_h)
 }
 
 texture_wh_f32 :: proc(tex: texture.Texture, x,y,w,h: f32) {
