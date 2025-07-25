@@ -18,20 +18,35 @@ Sound :: struct {
     data: []i16,
     is_stereo: bool,
     al_buf: u32,
-    pitch: f32,
-    volume: f32,
+    global_pitch: f32,
+    global_volume: f32,
     loop: bool,
     playing: bool,
-    sample_rate: u32
+    channel: ^Mixer,
+    sample_rate: u32,
 }
 
 Sound_Inst :: struct {
     al_src: u32,
+    pitch: f32,
+    volume: f32,
     sound: ^Sound
+}
+
+Mixer :: struct {
+    volume: f32,
+    pitch: f32,
+    parent: ^Mixer // LINKED LIST!!!!! never in my life did i think i would use this but its way more convinient here
 }
 
 file_type :: enum {
     wav, flac, mp3
+}
+
+master := Mixer {
+    volume = 1,
+    pitch  = 1,
+    parent = nil
 }
 
 device: alc.Device
@@ -127,8 +142,9 @@ load_from_data :: proc(data: ^[]u8, type: file_type) -> Sound {
         data = dec,
         is_stereo = is_stereo,
         al_buf = buf,
-        volume = 1,
-        pitch = 1,
+        global_pitch = 1,
+        global_volume = 1,
+        channel = &master,
         playing = false,
         loop = false,
         sample_rate = sample_rate
@@ -165,8 +181,21 @@ update :: proc() {
         state: i32
         al.get_sourcei(this^.al_src, al.SOURCE_STATE, &state)
 
-        al.sourcef(this^.al_src, al.GAIN, this^.sound^.volume)
-        al.sourcef(this^.al_src, al.PITCH, this^.sound^.pitch)
+        pitch  := this^.pitch
+        volume := this^.volume
+
+        pitch  *= this^.sound^.global_pitch
+        volume *= this^.sound^.global_volume
+
+        channel := this^.sound^.channel
+        for channel != nil {
+            pitch  *= channel^.pitch
+            volume *= channel^.volume
+            channel = channel^.parent
+        }
+
+        al.sourcef(this^.al_src, al.GAIN,  volume)
+        al.sourcef(this^.al_src, al.PITCH, pitch)
 
         if state != al.PLAYING {
             // shut the fuck up
@@ -190,7 +219,7 @@ stfu :: proc() {
     }
 }
 
-play :: proc(sound: ^Sound) {
+play :: proc(sound: ^Sound, volume: f32 = 1, pitch: f32 = 1) {
     src: u32
     al.gen_sources(1, &src)
     al.sourcei(src, al.BUFFER, i32(sound^.al_buf))
@@ -200,7 +229,9 @@ play :: proc(sound: ^Sound) {
 
     inst := new(Sound_Inst)
     inst^.al_src = src
-    inst^.sound = sound
+    inst^.volume = volume
+    inst^.pitch  = pitch
+    inst^.sound  = sound
 
     append(&sounds, inst)
 }

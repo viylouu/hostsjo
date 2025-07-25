@@ -8,6 +8,7 @@ import "../../eng/core/time"
 import au "../../eng/sound" // au -> audio
 
 import "core:math"
+import "core:math/rand"
 
 import "vendor:glfw"
 
@@ -38,9 +39,9 @@ main :: proc() {
 
             if is_key_press(KEY_ESCAPE) do stop()
 
-            if is_mouse_press(MOUSE_BUTTON_LEFT) do au.play(&introfade)
+            if is_mouse_press(MOUSE_BUTTON_LEFT) do au.play(&introfade, 1, rand.float32_range(0.25, 2))
 
-            music.pitch = math.sin(time32*32) + 1
+            music.global_volume = math.sin(time32*32) + 1
         },
         proc() /* render */ {
             using draw
