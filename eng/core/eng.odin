@@ -105,18 +105,26 @@ loop :: proc(update,render: proc()) {
     using glfw
     using time
 
+    time = GetTime()
+
     lastTime: f64
     for !WindowShouldClose(__handle) {
         PollEvents()
 		input.poll(__handle)
 
-        now := GetTime()
-        delta = now - lastTime
-        time = now
-        lastTime = now
+        now      := GetTime()
+        act_delta = now - lastTime
+        act_time  = now
+        lastTime  = now
+
+        act_delta32 = f32(act_delta)
+        act_time32  = f32(act_time)
+
+        delta = get_timescale() * act_delta
+        time += delta
 
         delta32 = f32(delta)
-        time32 = f32(time)
+        time32  = f32(time)
 
         __width  = callback.__width
         __height = callback.__height
