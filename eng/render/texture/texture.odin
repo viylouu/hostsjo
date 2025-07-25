@@ -3,6 +3,7 @@ package texture
 import "../../core/error"
 
 import "core:strings"
+import "core:os"
 
 import "vendor:OpenGL"
 import "vendor:stb/image"
@@ -17,13 +18,23 @@ Texture :: struct {
 
 // all textures must be freed using texture.free(tex)
 load :: proc(path: string) -> Texture {
-    w,h,channels: i32
-    cpath := strings.unsafe_string_to_cstring(path)
-    data := image.load(cpath, &w,&h,&channels, 4)
-    error.critical_conc([]string{ "failed to load texture! '", path, "'" }, data == nil)
-    error.critical_conc([]string{ "texture does not have 4 channels! '", path, "'" }, channels != 4)
+    data, succ := os.read_entire_file(path)
+    error.critical_conc([]string { "failed to open file '", path, "'!" }, !succ)
 
-    defer image.image_free(data)
+    tex := load_from_data(data)
+    delete(data)
+
+    return tex
+}
+
+// all textures must be freed using texture.free(tex)
+load_from_data :: proc(data: []u8) -> Texture {
+    w,h,channels: i32
+    img_data := image.load_from_memory(raw_data(data), cast(i32)len(data), &w,&h,&channels, 4)
+    error.critical( "failed to load texture!", img_data == nil)
+    error.critical("texture does not have 4 channels!", channels != 4)
+
+    defer image.image_free(img_data)
 
     using OpenGL
 
@@ -36,7 +47,7 @@ load :: proc(path: string) -> Texture {
     TexParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, NEAREST)
     TexParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, NEAREST)
 
-    TexImage2D(TEXTURE_2D, 0, RGBA, w,h, 0, RGBA, UNSIGNED_BYTE, data)
+    TexImage2D(TEXTURE_2D, 0, RGBA, w,h, 0, RGBA, UNSIGNED_BYTE, img_data)
 
     BindTexture(TEXTURE_2D, 0)
 
