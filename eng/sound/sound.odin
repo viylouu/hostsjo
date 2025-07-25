@@ -20,12 +20,13 @@ Sound :: struct {
     al_buf: u32,
     pitch: f32,
     volume: f32,
+    loop: bool,
+    playing: bool,
     sample_rate: u32
 }
 
 Sound_Inst :: struct {
     al_src: u32,
-    looping: bool,
     sound: ^Sound
 }
 
@@ -128,6 +129,8 @@ load_from_data :: proc(data: ^[]u8, type: file_type) -> Sound {
         al_buf = buf,
         volume = 1,
         pitch = 1,
+        playing = false,
+        loop = false,
         sample_rate = sample_rate
     }
 
@@ -169,7 +172,7 @@ update :: proc() {
             // shut the fuck up
             al.source_stop(this^.al_src)
 
-            if !this^.looping {
+            if !this^.sound^.loop || !this^.sound^.playing {
                 al.delete_sources(1, &this^.al_src)
 
                 unordered_remove(&sounds, i)
@@ -193,10 +196,20 @@ play :: proc(sound: ^Sound) {
     al.sourcei(src, al.BUFFER, i32(sound^.al_buf))
     al.source_play(src)
 
+    sound^.playing = true
+
     inst := new(Sound_Inst)
     inst^.al_src = src
-    inst^.looping = false
     inst^.sound = sound
 
     append(&sounds, inst)
+}
+
+loop :: proc(sound: ^Sound) {
+    play(sound)
+    sound^.loop = true
+}
+
+stop :: proc(sound: ^Sound) {
+    sound^.playing = false
 }

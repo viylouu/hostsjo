@@ -121,12 +121,12 @@ loop :: proc(update,render: proc()) {
         __width  = callback.__width
         __height = callback.__height
 
-        if const.wflag_const_scale {
+        if !const.wflag_const_scale {
             __area_width  = __width
             __area_height = __height
         } 
 
-        if const.wflag_draw_lib do draw.update(f32(__width),f32(__height))
+        if const.wflag_draw_lib do draw.update(f32(__area_width),f32(__area_height))
 
         if const.wflag_imgui {
             imfw.NewFrame()
