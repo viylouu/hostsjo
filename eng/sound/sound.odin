@@ -3,6 +3,7 @@ package sound
 import "core:fmt"
 import "core:math"
 import "core:strings"
+import "core:os"
 
 import "../core/error"
 import "../lib/OpenAL/alc"
@@ -28,6 +29,10 @@ Sound_Inst :: struct {
     sound: ^Sound
 }
 
+file_type :: enum {
+    wav, flac, mp3
+}
+
 device: alc.Device
 ctx:    alc.Context
 
@@ -47,7 +52,7 @@ end :: proc() {
     alc.close_device(device)
 }
 
-load :: proc(path: string) -> Sound {
+load_from_data :: proc(data: ^cstring, type: file_type) -> Sound {
     using dr_wav
     using dr_mp3
     using dr_flac
@@ -57,9 +62,12 @@ load :: proc(path: string) -> Sound {
     is_stereo: bool
     sample_rate: u32
 
-    if strings.has_suffix(path, ".wav") {
+    data_size :uint= size_of(cstring) * len(data)
+
+    switch type {
+    case .wav:
         wav: drwav
-        error.critical("failed to open file!", drwav_init_file(&wav, strings.unsafe_string_to_cstring(path), nil) == 0)
+        error.critical("failed to load audio data!", drwav_init_memory(&wav, data, data_size, nil) == 0)
 
         total_samples = wav.totalPCMFrameCount * u64(wav.channels)
         samples = make([^]f32, total_samples)
@@ -70,10 +78,10 @@ load :: proc(path: string) -> Sound {
         is_stereo = wav.channels == 2
 
         drwav_uninit(&wav)
-    } else if strings.has_suffix(path, ".flac") {
-        // why is this one different ????
-        flac := drflac_open_file(strings.unsafe_string_to_cstring(path), nil)
-        error.critical("failed to open file!", flac == nil)
+
+    case .flac:
+        flac := drflac_open_memory(data, data_size, nil)
+        error.critical("failed to load audio data!", flac == nil)
 
         total_samples = flac^.totalPCMFrameCount * u64(flac^.channels)
         samples = make([^]f32, total_samples)
@@ -84,9 +92,10 @@ load :: proc(path: string) -> Sound {
         is_stereo = flac^.channels == 2
 
         drflac_close(flac)
-    } else if strings.has_suffix(path, ".mp3") {
+
+    case .mp3:
         mp3: drmp3
-        error.critical("failed to open file!", drmp3_init_file(&mp3, strings.unsafe_string_to_cstring(path), nil) == 0)
+        error.critical("failed to load audio data!", drmp3_init_memory(&mp3, data, data_size, nil) == 0)
 
         total_samples = mp3.totalPCMFrameCount * u64(mp3.channels)
         samples = make([^]f32, total_samples)
@@ -97,7 +106,7 @@ load :: proc(path: string) -> Sound {
         is_stereo = mp3.channels == 2
 
         drmp3_uninit(&mp3)
-    } else do error.critical_conc([]string { "unsupported audio file format! '", path, "'" })
+    }
 
     data := make([]i16, total_samples)
 
@@ -123,6 +132,25 @@ load :: proc(path: string) -> Sound {
     }
 
     return output
+}
+
+load :: proc(path: string) -> Sound {
+    type: file_type
+    if      strings.has_suffix(path, ".wav")  do type = .wav
+    else if strings.has_suffix(path, ".mp3")  do type = .mp3
+    else if strings.has_suffix(path, ".flac") do type = .flac
+    else do error.critical_conc([]string { "unrecognized file type '", path, "'!" })
+
+    data, err := os.read_entire_file(path)
+    error.critical_conc([]string { "failed to read file data '", path, "'!" }, err)
+
+    cdata := strings.clone_to_cstring(string(data))
+    
+    snd := load_from_data(&cdata, type)
+    delete(cdata)
+    delete(data)
+
+    return snd
 }
 
 unload :: proc(sound: ^Sound) {
