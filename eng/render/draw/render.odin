@@ -5,6 +5,7 @@ import "../../core/error"
 
 import "core:fmt"
 import "core:math"
+import "core:math/linalg/glsl"
 
 import "vendor:OpenGL"
 
@@ -33,6 +34,13 @@ clear :: proc {
     clear_rgb_arr, 
     clear_rgb,
 }
+
+
+reset_transform :: proc() { using glsl ;; trans = identity(mat4) }
+transform :: proc(mat: glsl.mat4) { trans *= mat }
+translate :: proc(x,y: f32) { using glsl ;; trans *= mat4Translate(vec3{ x,y, 0 }) }
+rotate :: proc(rads: f32) { using glsl ;; trans *= mat4Rotate(vec3{0,0,1}, rads) }
+scale :: proc(x,y: f32) { using glsl ;; trans *= mat4Scale(vec3{x,y, 1}) }
 
 
 rect_rgba :: proc(x,y,w,h: i32, col: [4]u8) {

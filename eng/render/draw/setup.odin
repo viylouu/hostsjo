@@ -2,16 +2,14 @@ package draw
 
 import "../shader"
 
-import sl "core:math/linalg/glsl"
+import "core:math/linalg/glsl"
 
 import "vendor:OpenGL"
 
 @private
-proj: sl.mat4
+proj: glsl.mat4
 
 init :: proc(w,h: f32) {
-	proj = sl.mat4Ortho3d(0, w,h, 0, -1,1)
-
 	using OpenGL
 	using shader
 
@@ -31,10 +29,11 @@ init :: proc(w,h: f32) {
 
         bufs.rect.prog = load_program_from_src(&rect_vert, &rect_frag)
 
-        bufs.rect.loc_pos  = GetUniformLocation(bufs.rect.prog, "pos")
-        bufs.rect.loc_size = GetUniformLocation(bufs.rect.prog, "size")
-        bufs.rect.loc_col  = GetUniformLocation(bufs.rect.prog, "col")
-        bufs.rect.loc_proj = GetUniformLocation(bufs.rect.prog, "proj")
+        bufs.rect.loc_pos   = GetUniformLocation(bufs.rect.prog, "pos")
+        bufs.rect.loc_size  = GetUniformLocation(bufs.rect.prog, "size")
+        bufs.rect.loc_col   = GetUniformLocation(bufs.rect.prog, "col")
+        bufs.rect.loc_proj  = GetUniformLocation(bufs.rect.prog, "proj")
+        bufs.rect.loc_trans = GetUniformLocation(bufs.rect.prog, "trans")
 
     //// tex
         GenVertexArrays(1, &bufs.tex.vao)
@@ -59,10 +58,13 @@ init :: proc(w,h: f32) {
         bufs.tex.loc_tint      = GetUniformLocation(bufs.tex.prog, "tint")
         bufs.tex.loc_proj      = GetUniformLocation(bufs.tex.prog, "proj")
         bufs.tex.loc_tex       = GetUniformLocation(bufs.tex.prog, "tex")
+        bufs.tex.loc_trans     = GetUniformLocation(bufs.tex.prog, "trans")
 }
 
 update :: proc(w,h: f32) {
-    proj = sl.mat4Ortho3d(0, w,h, 0, -1,1)
+    using glsl
+    proj = mat4Ortho3d(0, w,h, 0, -1,1)
+    reset_transform()
 }
 
 end :: proc() {

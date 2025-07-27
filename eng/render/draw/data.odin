@@ -1,5 +1,7 @@
 package draw
 
+import "core:math/linalg/glsl"
+
 @private
 rect_vertices := [?]f32 {
 		0,0,
@@ -19,3 +21,6 @@ rect_frag := #load("../../../data/shaders/eng/rect.frag", cstring)
 tex_vert := #load("../../../data/shaders/eng/tex.vert", cstring)
 @private
 tex_frag := #load("../../../data/shaders/eng/tex.frag", cstring)
+
+@private
+trans: glsl.mat4
