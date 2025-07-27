@@ -1,14 +1,14 @@
 package main
 
-import eng "../../eng/core"
-import "../../eng/core/util"
-import "../../eng/core/input"
-import "../../eng/render/draw"
-import "../../eng/core/time"
-import au "../../eng/sound" // au -> audio
-
 import "core:math"
 import "core:math/rand"
+
+import eng "../../eng/core"
+import "../../eng/core/util"
+import "../../eng/core/time"
+import "../../eng/core/input"
+import "../../eng/render/draw"
+import au "../../eng/sound" // au -> audio
 
 import "vendor:glfw"
 

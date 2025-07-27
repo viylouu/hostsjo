@@ -2,8 +2,8 @@ package main
 
 import eng "../../eng/core"
 import "../../eng/core/util"
-import "../../eng/render/draw"
 import "../../eng/core/input"
+import "../../eng/render/draw"
 import tx "../../eng/render/texture"
 
 import "vendor:glfw"

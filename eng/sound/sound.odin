@@ -1,11 +1,12 @@
 package sound
 
+import "../core/error"
+
+import "core:os"
 import "core:fmt"
 import "core:math"
 import "core:strings"
-import "core:os"
 
-import "../core/error"
 import "../lib/OpenAL/alc"
 import "../lib/OpenAL/al"
 import "../lib/dr_libs/dr_wav"
@@ -39,8 +40,8 @@ Mixer :: struct {
     parent: ^Mixer // LINKED LIST!!!!! never in my life did i think i would use this but its way more convinient here
 }
 
-file_type :: enum {
-    wav, flac, mp3
+File_Type :: enum {
+    WAV, FLAC, MP3
 }
 
 master := Mixer {
@@ -68,7 +69,7 @@ end :: proc() {
     alc.close_device(device)
 }
 
-load_from_data :: proc(data: ^[]u8, type: file_type) -> Sound {
+load_from_data :: proc(data: ^[]u8, type: File_Type) -> Sound {
     using dr_wav
     using dr_mp3
     using dr_flac
@@ -81,7 +82,7 @@ load_from_data :: proc(data: ^[]u8, type: file_type) -> Sound {
     data_size :uint= len(data^)
 
     switch type {
-    case .wav:
+    case .WAV:
         wav: drwav
         error.critical("failed to load audio data!", drwav_init_memory(&wav, raw_data(data[:]), data_size, nil) == 0)
 
@@ -95,7 +96,7 @@ load_from_data :: proc(data: ^[]u8, type: file_type) -> Sound {
 
         drwav_uninit(&wav)
 
-    case .flac:
+    case .FLAC:
         flac := drflac_open_memory(raw_data(data[:]), data_size, nil)
         error.critical("failed to load audio data!", flac == nil)
 
@@ -109,7 +110,7 @@ load_from_data :: proc(data: ^[]u8, type: file_type) -> Sound {
 
         drflac_close(flac)
 
-    case .mp3:
+    case .MP3:
         mp3: drmp3
         error.critical("failed to load audio data!", drmp3_init_memory(&mp3, raw_data(data[:]), data_size, nil) == 0)
 
@@ -154,10 +155,10 @@ load_from_data :: proc(data: ^[]u8, type: file_type) -> Sound {
 }
 
 load :: proc(path: string) -> Sound {
-    type: file_type
-    if      strings.has_suffix(path, ".wav")  do type = .wav
-    else if strings.has_suffix(path, ".mp3")  do type = .mp3
-    else if strings.has_suffix(path, ".flac") do type = .flac
+    type: File_Type
+    if      strings.has_suffix(path, ".wav")  do type = .WAV
+    else if strings.has_suffix(path, ".mp3")  do type = .MP3
+    else if strings.has_suffix(path, ".flac") do type = .FLAC
     else do error.critical_conc([]string { "unrecognized file type '", path, "'!" })
 
     data, succ := os.read_entire_file(path)

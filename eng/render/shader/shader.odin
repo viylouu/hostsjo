@@ -1,10 +1,10 @@
 package shader
 
-import "core:fmt"
-import "core:os"
-import "core:strings"
-
 import "../../core/error"
+
+import "core:os"
+import "core:fmt"
+import "core:strings"
 
 import gl "vendor:OpenGL"
 

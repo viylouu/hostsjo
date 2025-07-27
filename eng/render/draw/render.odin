@@ -1,10 +1,10 @@
 package draw
 
-import "core:fmt"
-import "core:math"
-
 import "../texture"
 import "../../core/error"
+
+import "core:fmt"
+import "core:math"
 
 import "vendor:OpenGL"
 

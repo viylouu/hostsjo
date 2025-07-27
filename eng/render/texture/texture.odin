@@ -2,8 +2,8 @@ package texture
 
 import "../../core/error"
 
-import "core:strings"
 import "core:os"
+import "core:strings"
 
 import "vendor:OpenGL"
 import "vendor:stb/image"

@@ -1,13 +1,13 @@
 package main
 
+import "core:fmt"
+
 import eng "../../eng/core"
 import "../../eng/core/util"
 import "../../eng/core/input"
 import "../../eng/render/draw"
 
 import "../../eng/lib/imgui"
-
-import "core:fmt"
 
 import "vendor:glfw"
 

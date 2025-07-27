@@ -1,8 +1,8 @@
 package draw
 
-import sl "core:math/linalg/glsl"
-
 import "../shader"
+
+import sl "core:math/linalg/glsl"
 
 import "vendor:OpenGL"
 

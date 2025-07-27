@@ -1,7 +1,7 @@
 package error
 
-import "core:fmt"
 import "core:os"
+import "core:fmt"
 import "core:strings"
 
 import "vendor:OpenGL"

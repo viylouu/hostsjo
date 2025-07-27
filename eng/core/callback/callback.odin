@@ -1,7 +1,7 @@
 package callback
 
-import gl "vendor:OpenGL"
 import fw "vendor:glfw"
+import gl "vendor:OpenGL"
 
 __width:  i32 = 0
 __height: i32 = 0
