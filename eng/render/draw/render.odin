@@ -73,6 +73,7 @@ rect_rgba_f32 :: proc(x,y,w,h: f32, col: [4]u8) {
 	BindVertexArray(bufs.rect.vao)
 	
 	UniformMatrix4fv(bufs.rect.loc_proj, 1, false, transmute([^]f32)&proj)
+    UniformMatrix4fv(bufs.rect.loc_trans, 1, false, transmute([^]f32)&trans)
 	Uniform2f(bufs.rect.loc_pos, x,y)
 	Uniform2f(bufs.rect.loc_size, w,h)
 	Uniform4f(bufs.rect.loc_col, f32(col.r)/256., f32(col.g)/256., f32(col.b)/256., f32(col.a)/256.)
@@ -222,6 +223,7 @@ texture_rgba_wh_samp_f32 :: proc(tex: texture.Texture, x,y,w,h: f32, samp_x,samp
     Uniform1i(bufs.tex.loc_tex, 0)
 
     UniformMatrix4fv(bufs.tex.loc_proj, 1, false, transmute([^]f32)&proj)
+    UniformMatrix4fv(bufs.tex.loc_trans, 1, false, transmute([^]f32)&trans)
     Uniform2f(bufs.tex.loc_pos, x,y)
     Uniform2f(bufs.tex.loc_size, w,h)
     Uniform2f(bufs.tex.loc_samp_pos, samp_x/f32(tex.width),samp_y/f32(tex.height))

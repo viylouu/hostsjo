@@ -104,13 +104,14 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
 loop :: proc(update,render: proc()) {
     using glfw
     using time
+    using input
 
     time = GetTime()
 
     lastTime: f64
     for !WindowShouldClose(__handle) {
         PollEvents()
-		input.poll(__handle)
+		poll(__handle)
 
         now      := GetTime()
         act_delta = now - lastTime
@@ -133,6 +134,11 @@ loop :: proc(update,render: proc()) {
             __area_width  = __width
             __area_height = __height
         } 
+
+        mouse_x /= f32(__width)
+        mouse_y /= f32(__height)
+        mouse_x *= f32(__area_width)
+        mouse_y *= f32(__area_height)
 
         if const.wflag_draw_lib do draw.update(f32(__area_width),f32(__area_height))
 
