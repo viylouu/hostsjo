@@ -7,6 +7,7 @@ import "input"
 import "callback"
 import "../sound"
 import "../render/draw"
+import "../render/shader"
 
 import "core:fmt"
 import "core:strings"
@@ -17,8 +18,8 @@ import imfw "../lib/imgui/glfw"
 import imgl "../lib/imgui/opengl3"
 
 import "vendor:glfw"
-import "vendor:OpenGL"
 import "vendor:stb/image"
+import gl "vendor:OpenGL"
 
 __handle: glfw.WindowHandle
 
@@ -29,11 +30,21 @@ __area_height: i32
 
 WF_DEFAULT :: WF_DRAW_LIB | WF_SOUND_LIB | WF_IMGUI
 
-WF_DRAW_LIB    :: 1 << 0    // allows you to use the eng/draw stuff instead of raw opengl or whatever
-WF_CONST_SCALE :: 1 << 1    // makes it so the draw area will not change
-WF_RESIZABLE   :: 1 << 2    // makes the window able to be resized
-WF_IMGUI       :: 1 << 3    // whether or not to initialize imgui, also for some reason eng segfaults on end without this
-WF_SOUND_LIB   :: 1 << 4    // allows you to use the eng/sound stuff instead of raw openal or whatever
+WF_DRAW_LIB      :: 1 << 0    // allows you to use the eng/draw stuff instead of raw opengl or whatever
+WF_CONST_SCALE   :: 1 << 1    // makes it so the draw area will not change
+WF_RESIZABLE     :: 1 << 2    // makes the window able to be resized
+WF_IMGUI         :: 1 << 3    // whether or not to initialize imgui, also for some reason eng segfaults on end without this
+WF_SOUND_LIB     :: 1 << 4    // allows you to use the eng/sound stuff instead of raw openal or whatever
+WF_PIXEL_PERFECT :: 1 << 5    // pixelizes the viewport at the area scale, using this forces const scale
+
+@private
+_ppfbo: u32
+@private
+_pptex: u32
+@private
+_ppvao: u32
+@private
+_pprog: u32
 
 imgui_ver_string:  string
 
@@ -44,11 +55,14 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     error.critical("glfw is not being very happy >:(", !bool(Init()))
 
     // could be better by using log2 with variables but im too lazy to do that
-    const.wflag_draw_lib    = bool(flags       & 0x1)
-    const.wflag_const_scale = bool(flags >> 1  & 0x1)
-    const.wflag_resizable   = bool(flags >> 2  & 0x1)
-    const.wflag_imgui       = bool(flags >> 3  & 0x1)
-    const.wflag_sound_lib   = bool(flags >> 4  & 0x1)
+    const.wflag_draw_lib      = bool(flags >> 0  & 1)
+    const.wflag_const_scale   = bool(flags >> 1  & 1)
+    const.wflag_resizable     = bool(flags >> 2  & 1)
+    const.wflag_imgui         = bool(flags >> 3  & 1)
+    const.wflag_sound_lib     = bool(flags >> 4  & 1)
+    const.wflag_pixel_perfect = bool(flags >> 5  & 1)
+
+    if const.wflag_pixel_perfect do const.wflag_const_scale = true
 
     WindowHint(RESIZABLE,             i32(const.wflag_resizable))
     WindowHint(OPENGL_FORWARD_COMPAT, TRUE)
@@ -64,8 +78,8 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     SwapInterval(0)
     SetFramebufferSizeCallback(__handle, callback.__fbcb_size)
 
-    OpenGL.load_up_to(int(const.GL_MAJOR), const.GL_MINOR, gl_set_proc_address)
-    fmt.println("gl ver: ", OpenGL.GetString(OpenGL.VERSION))
+    gl.load_up_to(int(const.GL_MAJOR), const.GL_MINOR, gl_set_proc_address)
+    fmt.println("gl ver: ", gl.GetString(gl.VERSION))
 
     if const.wflag_imgui {
         im.CHECKVERSION()
@@ -90,7 +104,7 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     __area_width  = width
     __area_height = height
 
-    OpenGL.Viewport(0,0,__area_width,__area_height)
+    gl.Viewport(0,0,__area_width,__area_height)
 
     // fixes a bug where drawing doesent show up on windows until window is resized
     SetWindowSize(__handle, width + 1, height)
@@ -99,46 +113,75 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
 	if const.wflag_draw_lib do draw.init(f32(__area_width),f32(__area_height))
 
     if const.wflag_sound_lib do sound.init()
+
+    if const.wflag_pixel_perfect { 
+        gl.GenFramebuffers(1, &_ppfbo) 
+        gl.BindFramebuffer(gl.FRAMEBUFFER, _ppfbo)
+
+        gl.GenTextures(1, &_pptex)
+        gl.BindTexture(gl.TEXTURE_2D, _pptex)
+
+        gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width,height, 0, gl.RGB, gl.UNSIGNED_BYTE, nil)
+
+        gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+        gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+
+        gl.BindTexture(gl.TEXTURE_2D, 0)
+
+        gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, _pptex, 0)
+
+        error.critical("framebuffer is not complete!", gl.CheckFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE)
+        gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
+
+        gl.GenVertexArrays(1, &_ppvao) // dummy (thicc} vao
+
+        pprog_vert_data := #load("../../data/shaders/eng/buf.vert", cstring)
+        pprog_frag_data := #load("../../data/shaders/eng/buf.frag", cstring)
+        _pprog = shader.load_program_from_src(&pprog_vert_data, &pprog_frag_data)
+    }
 }
 
 loop :: proc(update,render: proc()) {
-    using glfw
     using time
     using input
 
-    time = GetTime()
+    time = glfw.GetTime()
 
     lastTime: f64
-    for !WindowShouldClose(__handle) {
-        PollEvents()
+    for !glfw.WindowShouldClose(__handle) {
+        glfw.PollEvents()
 		poll(__handle)
 
-        now      := GetTime()
-        act_delta = now - lastTime
-        act_time  = now
-        lastTime  = now
+        /* time */ { 
+            now      := glfw.GetTime()
+            act_delta = now - lastTime
+            act_time  = now
+            lastTime  = now
 
-        act_delta32 = f32(act_delta)
-        act_time32  = f32(act_time)
+            act_delta32 = f32(act_delta)
+            act_time32  = f32(act_time)
 
-        delta = get_timescale() * act_delta
-        time += delta
+            delta = get_timescale() * act_delta
+            time += delta
 
-        delta32 = f32(delta)
-        time32  = f32(time)
+            delta32 = f32(delta)
+            time32  = f32(time)
+        }
 
-        __width  = callback.__width
-        __height = callback.__height
+        /* scale stuff */ {
+            __width  = callback.__width
+            __height = callback.__height
 
-        if !const.wflag_const_scale {
-            __area_width  = __width
-            __area_height = __height
-        } 
+            if !const.wflag_const_scale {
+                __area_width  = __width
+                __area_height = __height
+            } 
 
-        mouse_x /= f32(__width)
-        mouse_y /= f32(__height)
-        mouse_x *= f32(__area_width)
-        mouse_y *= f32(__area_height)
+            mouse_x /= f32(__width)
+            mouse_y /= f32(__height)
+            mouse_x *= f32(__area_width)
+            mouse_y *= f32(__area_height)
+        }
 
         if const.wflag_draw_lib do draw.update(f32(__area_width),f32(__area_height))
 
@@ -148,8 +191,29 @@ loop :: proc(update,render: proc()) {
             im.NewFrame()
         }
 
+        if const.wflag_pixel_perfect {
+            using gl
+            BindFramebuffer(FRAMEBUFFER, _ppfbo)
+            Viewport(0,0, __area_width,__area_height)
+        }
+
         update()
         render()
+
+        if const.wflag_pixel_perfect {
+            using gl
+            BindFramebuffer(FRAMEBUFFER, 0)
+            Viewport(0,0, __width,__height)
+
+            ClearColor(1,0,1,1)
+            Clear(COLOR_BUFFER_BIT)
+
+            UseProgram(_pprog)
+            BindVertexArray(_ppvao)
+            Disable(DEPTH_TEST)
+            BindTexture(TEXTURE_2D, _pptex)
+            DrawArrays(TRIANGLES, 0, 6)
+        }
 
         if const.wflag_sound_lib do sound.update()
 
@@ -158,12 +222,17 @@ loop :: proc(update,render: proc()) {
             imgl.RenderDrawData(im.GetDrawData())
         }
 
-        SwapBuffers(__handle)
+        glfw.SwapBuffers(__handle)
     }
 }
 
 end :: proc() {
     using glfw
+
+    if const.wflag_pixel_perfect {
+        gl.DeleteTextures(1, &_pptex)
+        gl.DeleteFramebuffers(1, &_ppfbo)
+    }
 
     if const.wflag_imgui {
         imgl.Shutdown()
@@ -181,13 +250,13 @@ end :: proc() {
     if const.wflag_draw_lib do draw.end()
 
     // just being safe
-    glfw.SetKeyCallback(__handle, nil)
-    glfw.SetCharCallback(__handle, nil)
-    glfw.SetCursorPosCallback(__handle, nil)
-    glfw.SetMouseButtonCallback(__handle, nil)
-    glfw.SetScrollCallback(__handle, nil)
-    glfw.SetWindowCloseCallback(__handle, nil)
-    glfw.SetFramebufferSizeCallback(__handle, nil)
+    SetKeyCallback(__handle, nil)
+    SetCharCallback(__handle, nil)
+    SetCursorPosCallback(__handle, nil)
+    SetMouseButtonCallback(__handle, nil)
+    SetScrollCallback(__handle, nil)
+    SetWindowCloseCallback(__handle, nil)
+    SetFramebufferSizeCallback(__handle, nil)
 
     MakeContextCurrent(nil)
 
