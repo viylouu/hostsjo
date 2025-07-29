@@ -110,6 +110,8 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     SetWindowSize(__handle, width + 1, height)
     SetWindowSize(__handle, width, height)
 
+    input.load_mappings()
+
 	if const.wflag_draw_lib do draw.init(f32(__area_width),f32(__area_height))
 
     if const.wflag_sound_lib do sound.init()
