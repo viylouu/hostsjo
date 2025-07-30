@@ -5,7 +5,7 @@ import "vendor:OpenGL"
 @private
 bufs: struct {
 	rect: struct {
-		vao,vbo:   u32,
+		vao,ssbo:  u32,
 		prog:      u32,
 		loc_pos:   i32,
 		loc_size:  i32,
@@ -15,7 +15,7 @@ bufs: struct {
 	},
 
     tex: struct {
-        vao,vbo:       u32,
+        vao,ssbo:      u32,
         prog:          u32,
         loc_pos:       i32,
         loc_size:      i32,

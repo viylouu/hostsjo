@@ -1,9 +1,9 @@
 #version 330 core
 
-uniform vec4 col;
+flat in vec4 col;
 
-out vec4 fCol;
+out vec4 frag_col;
 
 void main() {
-	fCol = col;
+    frag_col = col;
 }

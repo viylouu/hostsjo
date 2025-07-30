@@ -17,7 +17,7 @@ Texture :: struct {
 }
 
 // all textures must be freed using texture.unload(tex)
-load :: proc(path: string) -> Texture {
+load :: proc(path: string) -> ^Texture {
     data, succ := os.read_entire_file(path)
     error.critical_conc([]string { "failed to open file '", path, "'!" }, !succ)
 
@@ -28,7 +28,7 @@ load :: proc(path: string) -> Texture {
 }
 
 // all textures must be freed using texture.unload(tex)
-load_from_data :: proc(data: []u8) -> Texture {
+load_from_data :: proc(data: []u8) -> ^Texture {
     w,h,channels: i32
     img_data := image.load_from_memory(raw_data(data), cast(i32)len(data), &w,&h,&channels, 4)
     error.critical("failed to load texture!", img_data == nil)
@@ -51,13 +51,16 @@ load_from_data :: proc(data: []u8) -> Texture {
 
     BindTexture(TEXTURE_2D, 0)
 
-    return Texture{ glid = glid, width = w, height = h }
+    tex := new(Texture)
+    tex^.glid = glid
+    tex^.width = w
+    tex^.height = h
+
+    return tex
 }
 
 unload :: proc(tex: ^Texture) {
     using OpenGL
     DeleteTextures(1, &tex^.glid)
-    tex^.glid   = 0
-    tex^.width  = 0
-    tex^.height = 0
+    free(tex)
 }

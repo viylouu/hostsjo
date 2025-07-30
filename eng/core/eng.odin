@@ -202,6 +202,8 @@ loop :: proc(update,render: proc()) {
         update()
         render()
 
+        if const.wflag_draw_lib do draw.flush()
+
         if const.wflag_pixel_perfect {
             using gl
             BindFramebuffer(FRAMEBUFFER, 0)

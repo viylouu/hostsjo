@@ -2,6 +2,7 @@ package draw
 
 import "../shader"
 
+import "core:fmt"
 import "core:math/linalg/glsl"
 
 import "vendor:OpenGL"
@@ -9,56 +10,34 @@ import "vendor:OpenGL"
 @private
 proj: glsl.mat4
 
+max_array_size :: 65536
+max_buffer_size :: max_array_size * size_of(Instance_Data)
+
 init :: proc(w,h: f32) {
 	using OpenGL
 	using shader
 
+    batch.data = make([dynamic]Instance_Data)
+
     //// rect
         GenVertexArrays(1, &bufs.rect.vao)
-        BindVertexArray(bufs.rect.vao)
+        GenBuffers(1, &bufs.rect.ssbo)
+        BindBuffer(SHADER_STORAGE_BUFFER, bufs.rect.ssbo)
 
-        GenBuffers(1, &bufs.rect.vbo)
-        BindBuffer(ARRAY_BUFFER, bufs.rect.vbo)
-        BufferData(ARRAY_BUFFER, len(rect_vertices) * size_of(f32), &rect_vertices, STATIC_DRAW)
-
-        VertexAttribPointer(0, 2, FLOAT, FALSE, 2 * size_of(f32), cast(uintptr)0)
-        EnableVertexAttribArray(0)
-
-        BindBuffer(ARRAY_BUFFER, 0)
-        BindVertexArray(0)
+        BufferStorage(SHADER_STORAGE_BUFFER, max_buffer_size, nil, DYNAMIC_STORAGE_BIT)
 
         bufs.rect.prog = load_program_from_src(&rect_vert, &rect_frag)
-
-        bufs.rect.loc_pos   = GetUniformLocation(bufs.rect.prog, "pos")
-        bufs.rect.loc_size  = GetUniformLocation(bufs.rect.prog, "size")
-        bufs.rect.loc_col   = GetUniformLocation(bufs.rect.prog, "col")
         bufs.rect.loc_proj  = GetUniformLocation(bufs.rect.prog, "proj")
-        bufs.rect.loc_trans = GetUniformLocation(bufs.rect.prog, "trans")
 
     //// tex
         GenVertexArrays(1, &bufs.tex.vao)
-        BindVertexArray(bufs.tex.vao)
+        GenBuffers(1, &bufs.tex.ssbo)
+        BindBuffer(SHADER_STORAGE_BUFFER, bufs.tex.ssbo)
 
-        GenBuffers(1, &bufs.tex.vbo)
-        BindBuffer(ARRAY_BUFFER, bufs.tex.vbo)
-        BufferData(ARRAY_BUFFER, len(rect_vertices) * size_of(f32), &rect_vertices, STATIC_DRAW)
-
-        VertexAttribPointer(0, 2, FLOAT, FALSE, 2 * size_of(f32), cast(uintptr)0)
-        EnableVertexAttribArray(0)
-
-        BindBuffer(ARRAY_BUFFER, 0)
-        BindVertexArray(0)
+        BufferStorage(SHADER_STORAGE_BUFFER, max_buffer_size, nil, DYNAMIC_STORAGE_BIT)
 
         bufs.tex.prog = load_program_from_src(&tex_vert, &tex_frag)
-
-        bufs.tex.loc_pos       = GetUniformLocation(bufs.tex.prog, "pos")
-        bufs.tex.loc_size      = GetUniformLocation(bufs.tex.prog, "size")
-        bufs.tex.loc_samp_pos  = GetUniformLocation(bufs.tex.prog, "samp_pos")
-        bufs.tex.loc_samp_size = GetUniformLocation(bufs.tex.prog, "samp_size")
-        bufs.tex.loc_tint      = GetUniformLocation(bufs.tex.prog, "tint")
         bufs.tex.loc_proj      = GetUniformLocation(bufs.tex.prog, "proj")
-        bufs.tex.loc_tex       = GetUniformLocation(bufs.tex.prog, "tex")
-        bufs.tex.loc_trans     = GetUniformLocation(bufs.tex.prog, "trans")
 }
 
 update :: proc(w,h: f32) {
@@ -70,11 +49,11 @@ update :: proc(w,h: f32) {
 end :: proc() {
     using OpenGL
 
-    if bufs.rect.vbo != 0  do DeleteBuffers(1, &bufs.rect.vbo) 
+    if bufs.rect.ssbo != 0 do DeleteBuffers(1, &bufs.rect.ssbo) 
     if bufs.rect.vao != 0  do DeleteVertexArrays(1, &bufs.rect.vao) 
     if bufs.rect.prog != 0 do DeleteProgram(bufs.rect.prog)
 
-    if bufs.tex.vbo != 0   do DeleteBuffers(1, &bufs.tex.vbo) 
-    if bufs.tex.vao != 0   do DeleteVertexArrays(1, &bufs.tex.vao) 
-    if bufs.tex.prog != 0  do DeleteProgram(bufs.tex.prog)
+    if bufs.tex.ssbo != 0 do DeleteBuffers(1, &bufs.tex.ssbo) 
+    if bufs.tex.vao != 0  do DeleteVertexArrays(1, &bufs.tex.vao) 
+    if bufs.tex.prog != 0 do DeleteProgram(bufs.tex.prog)
 }

@@ -1,5 +1,7 @@
 package draw
 
+import tx "../texture"
+
 import "core:math/linalg/glsl"
 
 @private
@@ -24,3 +26,30 @@ tex_frag := #load("../../../data/shaders/eng/tex.frag", cstring)
 
 @private
 trans: glsl.mat4
+
+@private
+batch: Assembled
+
+@private
+Assembled :: struct {
+    type: Batch_Type,
+    tex: ^tx.Texture,
+    data: [dynamic]Instance_Data,
+    was_used: bool
+}
+
+@private
+Instance_Data :: struct #packed {
+    trans: matrix[4,4]f32, 
+    pos: [2]f32, 
+    size: [2]f32,
+    samp_pos: [2]f32,
+    samp_size: [2]f32,
+    col: [4]f32
+}
+
+@private
+Batch_Type :: enum i32 {
+    RECT,
+    TEXTURE
+}
