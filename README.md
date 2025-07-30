@@ -7,4 +7,4 @@ example: `odin build examples/textures -out:build/textures`
 
 requirements:
 * OpenAL
-* OpenGL >= 3.3
+* OpenGL >= 4.4
