@@ -1,3 +1,6 @@
+![ymir engine logo](ymir%20engine%20logo.png)
+# ymir engine
+
 to build:  
 LINUX: `odin build src -out:build/[projectname]`  
 WINDOWS: `odin build src -out:build/[projectname].exe`  
