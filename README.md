@@ -6,6 +6,8 @@
     ymir engine
 </p>
 
+<hr>
+
 to build:  
 LINUX: `odin build src -out:build/[projectname]`  
 WINDOWS: `odin build src -out:build/[projectname].exe`  
