@@ -1,4 +1,7 @@
-![ymir engine logo](ymir%20engine%20logo.png)
+<p align="center">
+    <img width=256 height=320 src="ymir%20engine%20logo.png">
+</p>
+
 # ymir engine
 
 to build:  
