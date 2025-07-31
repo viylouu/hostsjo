@@ -2,7 +2,9 @@
     <img width=256 height=320 src="ymir%20engine%20logo.png">
 </p>
 
-<p style="text-align" align="center"><h1>ymir engine</h1></p>
+<p align="center">
+    # ymir engine
+</p>
 
 to build:  
 LINUX: `odin build src -out:build/[projectname]`  
