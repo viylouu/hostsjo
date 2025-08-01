@@ -129,7 +129,7 @@ load_from_data :: proc(data: ^[]u8, type: File_Type) -> Sound {
 
     for i in 0..<len(dec) {
         raw_float := samples[i]
-        conv_float := raw_float * 32767
+        conv_float := math.clamp(raw_float * 32767, -32767, 32767)
         dec[i] = i16(conv_float)
     }
 
