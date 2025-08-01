@@ -1,6 +1,6 @@
 package util
 
-import eng "../"
+import "../const"
 
 import "vendor:glfw"
 
@@ -13,17 +13,18 @@ vsync :: proc(enabled: bool) {
 
 fullscreen :: proc(enabled: bool) {
     using glfw
+    using const
     
     if enabled {
         mon := GetPrimaryMonitor()
         mode := GetVideoMode(mon)
 
-        w_x, w_y = GetWindowPos(eng.__handle)
-        w_w, w_h = GetWindowSize(eng.__handle)
+        w_x, w_y = GetWindowPos(__handle)
+        w_w, w_h = GetWindowSize(__handle)
         
-        SetWindowMonitor(eng.__handle, mon, 0,0, mode^.width, mode^.height, mode^.refresh_rate)
+        SetWindowMonitor(__handle, mon, 0,0, mode^.width, mode^.height, mode^.refresh_rate)
         return
     }
 
-    SetWindowMonitor(eng.__handle, nil, w_x,w_y,w_w,w_h, 0)
+    SetWindowMonitor(__handle, nil, w_x,w_y,w_w,w_h, 0)
 }

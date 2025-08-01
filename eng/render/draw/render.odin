@@ -36,6 +36,34 @@ clear :: proc {
 }
 
 
+to_texture :: proc(tex: ^texture.Texture, func: proc()) {
+    using OpenGL
+
+    ipfbo: i32
+    GetIntegerv(FRAMEBUFFER_BINDING, &ipfbo)
+    pfbo := u32(ipfbo)
+
+    viewport: [4]i32
+    GetIntegerv(VIEWPORT, raw_data(viewport[:]))
+    old_w := viewport[2]
+    old_h := viewport[3]
+
+    flush()
+    update(f32(tex^.width), f32(tex^.height))
+
+    BindFramebuffer(FRAMEBUFFER, tex^.fbo)
+    Viewport(0,0,tex^.width,tex^.height)
+
+    func()
+    flush()
+
+    BindFramebuffer(FRAMEBUFFER, pfbo)
+
+    Viewport(0,0,old_w,old_h)
+    update(f32(old_w),f32(old_h))
+}
+
+
 flush :: proc() {
     using OpenGL
 

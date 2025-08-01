@@ -19,6 +19,9 @@ init :: proc(w,h: f32) {
 
     batch.data = make([dynamic]Instance_Data)
 
+    Enable(BLEND)
+    BlendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA)
+
     //// rect
         GenVertexArrays(1, &bufs.rect.vao)
         GenBuffers(1, &bufs.rect.ssbo)

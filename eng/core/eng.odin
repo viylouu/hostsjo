@@ -21,24 +21,14 @@ import "vendor:glfw"
 import "vendor:stb/image"
 import gl "vendor:OpenGL"
 
-__handle: glfw.WindowHandle
+WF_DEFAULT :: WF_SOUND_LIB | WF_IMGUI
 
-__width:  i32
-__height: i32
-__area_width:  i32
-__area_height: i32
-
-WF_DEFAULT :: WF_DRAW_LIB | WF_SOUND_LIB | WF_IMGUI
-
-WF_DRAW_LIB      :: 1 << 0    // allows you to use the eng/draw stuff instead of raw opengl or whatever
 WF_CONST_SCALE   :: 1 << 1    // makes it so the draw area will not change
 WF_RESIZABLE     :: 1 << 2    // makes the window able to be resized
 WF_IMGUI         :: 1 << 3    // whether or not to initialize imgui, also for some reason eng segfaults on end without this
 WF_SOUND_LIB     :: 1 << 4    // allows you to use the eng/sound stuff instead of raw openal or whatever
 WF_PIXEL_PERFECT :: 1 << 5    // pixelizes the viewport at the area scale, using this forces const scale
 
-@private
-_ppfbo: u32
 @private
 _pptex: u32
 @private
@@ -51,11 +41,11 @@ imgui_ver_string:  string
 // flags can be specified using the consts in the format: WF_FLAG_NAME and bit-or-ing the flags together 
 init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     using glfw
+    using const
 
     error.critical("glfw is not being very happy >:(", !bool(Init()))
 
     // could be better by using log2 with variables but im too lazy to do that
-    const.wflag_draw_lib      = bool(flags >> 0  & 1)
     const.wflag_const_scale   = bool(flags >> 1  & 1)
     const.wflag_resizable     = bool(flags >> 2  & 1)
     const.wflag_imgui         = bool(flags >> 3  & 1)
@@ -71,8 +61,8 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     WindowHint(CONTEXT_VERSION_MINOR, const.GL_MINOR)
     WindowHint(FLOATING,              TRUE)
 
-    __handle = CreateWindow(width,height,title, nil,nil)
-    error.critical("the window is being silly, wattesigma", __handle == nil)
+    const.__handle = CreateWindow(width,height,title, nil,nil)
+    error.critical("the window is being silly, wattesigma", const.__handle == nil)
 
     MakeContextCurrent(__handle)
     SwapInterval(0)
@@ -112,13 +102,13 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
 
     input.load_mappings()
 
-	if const.wflag_draw_lib do draw.init(f32(__area_width),f32(__area_height))
+	draw.init(f32(__area_width),f32(__area_height))
 
     if const.wflag_sound_lib do sound.init()
 
     if const.wflag_pixel_perfect { 
-        gl.GenFramebuffers(1, &_ppfbo) 
-        gl.BindFramebuffer(gl.FRAMEBUFFER, _ppfbo)
+        gl.GenFramebuffers(1, &const.__ppfbo) 
+        gl.BindFramebuffer(gl.FRAMEBUFFER, const.__ppfbo)
 
         gl.GenTextures(1, &_pptex)
         gl.BindTexture(gl.TEXTURE_2D, _pptex)
@@ -146,6 +136,7 @@ init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
 loop :: proc(update,render: proc()) {
     using time
     using input
+    using const
 
     time = glfw.GetTime()
 
@@ -185,7 +176,7 @@ loop :: proc(update,render: proc()) {
             mouse_y *= f32(__area_height)
         }
 
-        if const.wflag_draw_lib do draw.update(f32(__area_width),f32(__area_height))
+        draw.update(f32(__area_width),f32(__area_height))
 
         if const.wflag_imgui {
             imfw.NewFrame()
@@ -195,19 +186,19 @@ loop :: proc(update,render: proc()) {
 
         if const.wflag_pixel_perfect {
             using gl
-            BindFramebuffer(FRAMEBUFFER, _ppfbo)
-            Viewport(0,0, __area_width,__area_height)
+            BindFramebuffer(FRAMEBUFFER, const.__ppfbo)
+            Viewport(0,0, const.__area_width,const.__area_height)
         }
 
         update()
         render()
 
-        if const.wflag_draw_lib do draw.flush()
+        draw.flush()
 
         if const.wflag_pixel_perfect {
             using gl
             BindFramebuffer(FRAMEBUFFER, 0)
-            Viewport(0,0, __width,__height)
+            Viewport(0,0, const.__width,const.__height)
 
             ClearColor(1,0,1,1)
             Clear(COLOR_BUFFER_BIT)
@@ -226,16 +217,17 @@ loop :: proc(update,render: proc()) {
             imgl.RenderDrawData(im.GetDrawData())
         }
 
-        glfw.SwapBuffers(__handle)
+        glfw.SwapBuffers(const.__handle)
     }
 }
 
 end :: proc() {
     using glfw
+    using const
 
     if const.wflag_pixel_perfect {
         gl.DeleteTextures(1, &_pptex)
-        gl.DeleteFramebuffers(1, &_ppfbo)
+        gl.DeleteFramebuffers(1, &__ppfbo)
     }
 
     if const.wflag_imgui {
@@ -251,7 +243,7 @@ end :: proc() {
         sound.end()
     }
 
-    if const.wflag_draw_lib do draw.end()
+    draw.end()
 
     // just being safe
     SetKeyCallback(__handle, nil)
@@ -271,5 +263,5 @@ end :: proc() {
 
 stop :: proc() {
     using glfw
-    SetWindowShouldClose(__handle, true)
+    SetWindowShouldClose(const.__handle, true)
 }
