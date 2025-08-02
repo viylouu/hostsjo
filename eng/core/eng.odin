@@ -38,6 +38,12 @@ _pprog: u32
 
 imgui_ver_string:  string
 
+scale_window :: proc(scale: f32) {
+    using glfw
+    using const
+    SetWindowSize(__handle, i32(f32(__area_width)*scale), i32(f32(__area_height)*scale))
+}
+
 // flags can be specified using the consts in the format: WF_FLAG_NAME and bit-or-ing the flags together 
 init :: proc(title: cstring, width,height: i32, flags: int = WF_DEFAULT) {
     using glfw
