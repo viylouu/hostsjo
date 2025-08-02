@@ -13,7 +13,8 @@ import "../lib/dr_libs/dr_wav"
 import "../lib/dr_libs/dr_flac"
 import "../lib/dr_libs/dr_mp3"
 
-sounds: [dynamic]^Sound_Inst
+SOUNDS :: 256
+instances: [SOUNDS]^Sound_Inst
 
 Sound :: struct {
     data: []i16,
@@ -31,7 +32,8 @@ Sound_Inst :: struct {
     al_src: u32,
     pitch: f32,
     volume: f32,
-    sound: ^Sound
+    sound: ^Sound,
+    has_sound: bool
 }
 
 Mixer :: struct {
@@ -61,6 +63,14 @@ init :: proc() {
     error.critical("failed to create OpenAL context!", ctx == nil)
 
     alc.make_context_current(ctx)
+
+    for i in 0..<SOUNDS {
+        this := &instances[i]
+        this^ = new(Sound_Inst)
+        src: u32
+        al.gen_sources(1, &src)
+        this^^.al_src = src
+    }
 }
 
 end :: proc() {
@@ -137,7 +147,7 @@ load_from_data :: proc(data: ^[]u8, type: File_Type) -> Sound {
     al.gen_buffers(1, &buf)
 
     format := is_stereo? al.FORMAT_STEREO16 : al.FORMAT_MONO16
-    al.buffer_data(buf, format, &dec[0], i32(len(dec) * size_of(i16)), i32(sample_rate))
+    al.buffer_data(buf, format, raw_data(dec), i32(len(dec) * size_of(i16)), i32(sample_rate))
 
     output := Sound {
         data = dec,
@@ -176,8 +186,9 @@ unload :: proc(sound: ^Sound) {
 }
 
 update :: proc() {
-    for i := 0; i < len(sounds); i += 1 {
-        this := sounds[i]
+    for i in 0..<SOUNDS {
+        this := instances[i]
+        if !this^.has_sound do continue
 
         state: i32
         al.get_sourcei(this^.al_src, al.SOURCE_STATE, &state)
@@ -203,38 +214,45 @@ update :: proc() {
             al.source_stop(this^.al_src)
 
             if !this^.sound^.loop || !this^.sound^.playing {
-                al.delete_sources(1, &this^.al_src)
-
-                unordered_remove(&sounds, i)
-                i -= 1
+                instances[i].has_sound = false
             } else do al.source_play(this^.al_src)
         }
     }
 }
 
+// do not call this!!!!!!!
 stfu :: proc() {
-    for i in 0..<len(sounds) {
-        al.source_stop(sounds[i]^.al_src)
-
-        al.delete_sources(1, &sounds[i]^.al_src)
+    for i in 0..<SOUNDS {
+        al.source_stop(instances[i]^.al_src)
+        al.delete_sources(1, &instances[i]^.al_src)
+        instances[i] = nil
     }
 }
 
 play :: proc(sound: ^Sound, volume: f32 = 1, pitch: f32 = 1) {
     src: u32
-    al.gen_sources(1, &src)
+    index: int
+    for i in 0..<SOUNDS {
+        this := instances[i]
+        if !this^.has_sound {
+            src = this^.al_src
+            index = i
+        }
+    }
+
     al.sourcei(src, al.BUFFER, i32(sound^.al_buf))
     al.source_play(src)
 
     sound^.playing = true
 
     inst := new(Sound_Inst)
-    inst^.al_src = src
-    inst^.volume = volume
-    inst^.pitch  = pitch
-    inst^.sound  = sound
-
-    append(&sounds, inst)
+    inst^.al_src    = src
+    inst^.volume    = volume
+    inst^.pitch     = pitch
+    inst^.sound     = sound
+    inst^.has_sound = true
+    
+    instances[index] = inst
 }
 
 loop :: proc(sound: ^Sound) {
